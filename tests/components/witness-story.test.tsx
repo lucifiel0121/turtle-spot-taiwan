@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WitnessStory } from "@/components/sections/witness-story";
 import type { Activity } from "@/types/activity";
+import { makeActivity } from "../helpers/fixtures";
 
 const useActivitiesMock = vi.fn();
 
@@ -18,16 +19,6 @@ type HookState = {
 
 function stubActivities(state: HookState) {
   useActivitiesMock.mockReturnValue(state);
-}
-
-function makeActivity(overrides: Partial<Activity> = {}): Activity {
-  return {
-    title: "海龜點點名",
-    description: "在花瓶岩目擊綠蠵龜",
-    post_link: "https://example.com/post/1",
-    date: "2024-10-29",
-    ...overrides,
-  };
 }
 
 function renderWithActivities(activities: readonly Activity[]) {
@@ -139,14 +130,17 @@ describe("WitnessStory 三態與資料呈現", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("fallbackActivities 傳入 useActivities（SWR fallbackData 路徑）", () => {
-    const fallback = [makeActivity()];
+  it("fallback 路徑：首屏即渲染卡片內容、無 loading 佔位卡", () => {
+    // fallbackActivities 經 useActivities（SWR fallbackData）回流：
+    // 斷言使用者可見結果（卡片內容直出），不驗 mock 呼叫參數
+    const fallback = [makeActivity({ title: "首屏直出的目擊" })];
     stubActivities({
       activities: fallback,
       error: undefined,
       isLoading: false,
     });
     render(<WitnessStory fallbackActivities={fallback} />);
-    expect(useActivitiesMock).toHaveBeenCalledWith(fallback);
+    expect(screen.getByText("首屏直出的目擊")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

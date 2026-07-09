@@ -1,42 +1,17 @@
 import { renderHook, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
-import { SWRConfig } from "swr";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ACTIVITIES_QUERY, fetchActivities, useActivities } from "@/lib/activities";
-import type { Activity } from "@/types/activity";
+import { makeActivity } from "../helpers/fixtures";
+import { graphqlRequestMock as requestMock } from "../helpers/graphql-mock";
+import { createSwrWrapper } from "../helpers/swr";
 
-const requestMock = vi.fn();
+vi.mock("@/lib/graphql", async () => {
+  const helper = await import("../helpers/graphql-mock");
+  return helper.mockGraphqlModule();
+});
 
-vi.mock("@/lib/graphql", () => ({
-  graphqlClient: {
-    request: (...args: unknown[]) => requestMock(...args),
-  },
-}));
-
-const ACTIVITY: Activity = {
-  title: "小琉球淨灘",
-  description: "海龜目擊紀錄",
-  post_link: "https://example.com/post/1",
-  date: "2024-10-29",
-};
-
-/** 每個測試給全新 SWR cache，避免跨測試共用快取汙染。 */
-function createWrapper() {
-  return function Wrapper({ children }: { readonly children: ReactNode }) {
-    return (
-      <SWRConfig
-        value={{
-          provider: () => new Map(),
-          dedupingInterval: 0,
-          shouldRetryOnError: false,
-        }}
-      >
-        {children}
-      </SWRConfig>
-    );
-  };
-}
+const ACTIVITY = makeActivity();
 
 beforeEach(() => {
   requestMock.mockReset();
@@ -58,7 +33,7 @@ describe("useActivities", () => {
     requestMock.mockResolvedValue({ activities: [ACTIVITY] });
 
     const { result } = renderHook(() => useActivities([ACTIVITY]), {
-      wrapper: createWrapper(),
+      wrapper: createSwrWrapper(),
     });
 
     // 首屏（尚未 revalidate 完成）即以 fallback 呈現，無空窗
@@ -74,7 +49,7 @@ describe("useActivities", () => {
     requestMock.mockResolvedValue({ activities: [ACTIVITY] });
 
     const { result } = renderHook(() => useActivities(), {
-      wrapper: createWrapper(),
+      wrapper: createSwrWrapper(),
     });
 
     expect(result.current.isLoading).toBe(true);
@@ -89,7 +64,7 @@ describe("useActivities", () => {
     requestMock.mockRejectedValue(new Error("network down"));
 
     const { result } = renderHook(() => useActivities(), {
-      wrapper: createWrapper(),
+      wrapper: createSwrWrapper(),
     });
 
     await waitFor(() => expect(result.current.error).toBeDefined());

@@ -1,20 +1,19 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { GetStaticPropsContext } from "next";
-import { SWRConfig } from "swr";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import Home, { getStaticProps } from "@/pages/index";
 import type { Activity } from "@/types/activity";
-
-const requestMock = vi.fn();
+import { makeActivity } from "../helpers/fixtures";
+import { graphqlRequestMock as requestMock } from "../helpers/graphql-mock";
+import { createSwrWrapper } from "../helpers/swr";
 
 // 阻斷真實網路：graphql client 一律走 mock（SWR revalidate 也會打）
-vi.mock("@/lib/graphql", () => ({
-  graphqlClient: {
-    request: (...args: unknown[]) => requestMock(...args),
-  },
-}));
+vi.mock("@/lib/graphql", async () => {
+  const helper = await import("../helpers/graphql-mock");
+  return helper.mockGraphqlModule();
+});
 
 // jsdom 無版面，embla 以 mock 替身運作（深度互動見 headed 驗證）
 vi.mock("embla-carousel-react", async () => {
@@ -22,19 +21,12 @@ vi.mock("embla-carousel-react", async () => {
   return { default: helper.mockUseEmblaCarousel };
 });
 
-const ACTIVITY: Activity = {
-  title: "小琉球淨灘",
-  description: "海龜目擊紀錄",
-  post_link: "https://example.com/post/1",
-  date: "2024-10-29",
-};
+const ACTIVITY = makeActivity();
 
 function renderHome(fallbackActivities: readonly Activity[]) {
-  return render(
-    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
-      <Home fallbackActivities={fallbackActivities} />
-    </SWRConfig>,
-  );
+  return render(<Home fallbackActivities={fallbackActivities} />, {
+    wrapper: createSwrWrapper(),
+  });
 }
 
 beforeEach(() => {
