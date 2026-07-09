@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 
 import { FullscreenMenu } from "@/components/fullscreen-menu";
 import { Section, SectionContainer } from "@/components/layout/section";
+import { Marquee } from "@/components/marquee";
 import { Navbar } from "@/components/navbar";
 import { fetchActivities, useActivities } from "@/lib/activities";
 import type { Activity } from "@/types/activity";
@@ -12,6 +13,9 @@ type HomeProps = {
 };
 
 const REVALIDATE_SECONDS = 3600;
+
+// S2.3 demo：單份內容重複三次確保寬度 >= 容器寬（Marquee 無縫循環前提）
+const HERO_MARQUEE_WORDS = ["Information", "Information", "Information"] as const;
 
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
   try {
@@ -79,7 +83,17 @@ export default function Home({
       </Section>
       <FullscreenMenu open={menuOpen} onClose={closeMenu} />
       <Section id="hero-information" background="brand-soft" padding="spacious">
-        <SectionPlaceholder label="Hero Information" />
+        {/* S2.3 暫掛 demo：僅驗證 Marquee 捲動；完整 Hero 版面於 S2.4 實作 */}
+        <Marquee
+          durationSeconds={15}
+          className="font-display text-6xl font-semibold text-foam md:text-8xl xl:text-9xl"
+        >
+          {HERO_MARQUEE_WORDS.map((word, index) => (
+            <span key={`${word}-${index}`} className="whitespace-nowrap pr-10">
+              {word}
+            </span>
+          ))}
+        </Marquee>
       </Section>
       <Section id="photo-carousel" background="surface-mist" padding="spacious">
         <SectionPlaceholder label="Photo Carousel" />

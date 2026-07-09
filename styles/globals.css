@@ -154,6 +154,33 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/*
+ * S2.3 Marquee 跑馬燈（components/marquee.tsx）：
+ * track 內容渲染兩份，位移 -50%（一份內容寬）後回到起點，形成無縫循環。
+ * 不放進 @theme --animate-*：animation 縮寫中的 var(--marquee-duration)
+ * 需在元素層解析（各呼叫端以 inline style 覆寫速度），
+ * 而 @theme 變數於 :root 解析會固定成預設值。
+ */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll var(--marquee-duration, 20s) linear infinite;
+}
+
+/* WCAG 2.2.2：使用者偏好減少動態時停止捲動，靜態顯示第一份內容 */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
