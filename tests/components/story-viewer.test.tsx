@@ -221,15 +221,27 @@ describe("StoryViewer", () => {
     expect(screen.getByText("第一則")).toBeInTheDocument();
   });
 
-  it("pointerdown 時對卡片要求 pointer capture（拖出邊界仍收得到 pointerup）", () => {
+  it("pointer capture 延後到水平位移達 slop 才要求（拖出邊界仍收得到 pointerup）", () => {
     renderViewer();
     const region = screen.getByRole("region", { name: "測試動態" });
     const setPointerCapture = vi.fn();
     // jsdom 未實作 Pointer Capture API，mock 驗證呼叫參數
     Object.assign(region, { setPointerCapture });
 
+    // pointerdown 不可 capture：capture 會讓 click 重定向到卡片，
+    // 卡內 dots / VIEW POST 的滑鼠 click 全數失效（Chrome 實測回歸）
     fireEvent.pointerDown(region, { clientX: 200, clientY: 100, pointerId: 7 });
+    expect(setPointerCapture).not.toHaveBeenCalled();
+
+    // 位移未達 slop：仍不 capture
+    fireEvent.pointerMove(region, { clientX: 195, clientY: 100, pointerId: 7 });
+    expect(setPointerCapture).not.toHaveBeenCalled();
+
+    // 水平位移達 slop：拖曳意圖確立，要求 capture（只要求一次）
+    fireEvent.pointerMove(region, { clientX: 180, clientY: 100, pointerId: 7 });
     expect(setPointerCapture).toHaveBeenCalledWith(7);
+    fireEvent.pointerMove(region, { clientX: 150, clientY: 100, pointerId: 7 });
+    expect(setPointerCapture).toHaveBeenCalledTimes(1);
 
     // capture 生效下 pointerup 回到卡片：拖出邊界的座標仍完成換頁
     fireEvent.pointerUp(region, { clientX: -500, clientY: 100, pointerId: 7 });

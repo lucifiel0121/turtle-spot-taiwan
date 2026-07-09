@@ -30,6 +30,15 @@ import { cn } from "@/lib/utils";
 export const SWIPE_THRESHOLD_PX = 50;
 
 /**
+ * 水平位移達此值才要求 pointer capture（視為拖曳意圖）。
+ * 不可在 pointerdown 就 capture：capture 生效期間 pointerup 會重定向到
+ * 卡片本身，瀏覽器據此把後續 click 事件也派發到卡片（UI Events click
+ * retargeting），卡內 dots 與 VIEW POST 的滑鼠 click 將永遠到不了目標
+ * 元素（S5.5 headed 驗證實測 Chrome 行為，jsdom 無法重現）。
+ */
+export const CAPTURE_SLOP_PX = 10;
+
+/**
  * story 卡尺寸／底色／頂部圓角（三檔 RWD 量測值見檔頭註解）。
  * viewer 本體與 witness-story 三態佔位卡（StoryStatusCard）共用，
  * 確保載入／錯誤／空資料時卡片尺寸與有資料時一致。
@@ -72,8 +81,10 @@ export function resolveSwipeDirection(
 /**
  * Pointer events 手勢導覽：卡片掛 touch-pan-y，垂直捲動仍交還瀏覽器
  * （瀏覽器接手捲動時發 pointercancel，起點被清空、不誤觸換頁）。
- * - pointerdown 時 setPointerCapture：滑鼠拖出卡片邊界放開仍收得到
- *   pointerup（jsdom 無此 API，optional call 防呆）
+ * - pointer capture 延後到 pointermove 水平位移達 CAPTURE_SLOP_PX 才要求
+ *   （拖曳意圖確立後拖出卡片邊界放開仍收得到 pointerup）；pointerdown 即
+ *   capture 會使 click 重定向到卡片、卡內 dots 與 VIEW POST 點不到
+ *   （jsdom 無此 API，optional call 防呆）
  * - swipe 成立時一次性抑制後續 click（capture phase）：拖曳起訖都落在
  *   VIEW POST anchor 上時，換頁與開新分頁不再同時發生
  */
@@ -81,12 +92,21 @@ function useSwipeNavigation(step: (direction: StoryDirection) => void) {
   const start = useRef<{ readonly x: number; readonly y: number } | null>(
     null,
   );
+  const captured = useRef(false);
   const suppressClick = useRef(false);
 
   const onPointerDown = useCallback((event: ReactPointerEvent) => {
     // 新手勢開始即歸零抑制 flag：swipe 後未跟進 click 時不殘留到下一次真 click
     suppressClick.current = false;
+    captured.current = false;
     start.current = { x: event.clientX, y: event.clientY };
+  }, []);
+
+  const onPointerMove = useCallback((event: ReactPointerEvent) => {
+    const origin = start.current;
+    if (!origin || captured.current) return;
+    if (Math.abs(event.clientX - origin.x) < CAPTURE_SLOP_PX) return;
+    captured.current = true;
     event.currentTarget.setPointerCapture?.(event.pointerId);
   }, []);
 
@@ -94,6 +114,7 @@ function useSwipeNavigation(step: (direction: StoryDirection) => void) {
     (event: ReactPointerEvent) => {
       const origin = start.current;
       start.current = null;
+      captured.current = false;
       if (!origin) return;
       const direction = resolveSwipeDirection(
         event.clientX - origin.x,
@@ -108,6 +129,7 @@ function useSwipeNavigation(step: (direction: StoryDirection) => void) {
 
   const onPointerCancel = useCallback(() => {
     start.current = null;
+    captured.current = false;
   }, []);
 
   const onClickCapture = useCallback((event: ReactMouseEvent) => {
@@ -117,7 +139,13 @@ function useSwipeNavigation(step: (direction: StoryDirection) => void) {
     event.stopPropagation();
   }, []);
 
-  return { onPointerDown, onPointerUp, onPointerCancel, onClickCapture };
+  return {
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel,
+    onClickCapture,
+  };
 }
 
 type ProgressDotsProps = {
