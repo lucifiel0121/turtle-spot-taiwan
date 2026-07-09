@@ -93,6 +93,7 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 掛載當下需與 embla api 目前選取狀態同步，非渲染路徑上的連鎖 setState
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)

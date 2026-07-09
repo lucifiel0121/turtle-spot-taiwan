@@ -18,7 +18,7 @@ vi.mock("@/lib/graphql", async () => {
 // jsdom 無版面，embla 以 mock 替身運作（深度互動見 headed 驗證）
 vi.mock("embla-carousel-react", async () => {
   const helper = await import("../helpers/embla-mock");
-  return { default: helper.mockUseEmblaCarousel };
+  return { default: helper.useMockEmblaCarousel };
 });
 
 const ACTIVITY = makeActivity();

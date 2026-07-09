@@ -17,7 +17,7 @@ import { setMatchMediaMatches } from "../setup";
  */
 vi.mock("embla-carousel-react", async () => {
   const helper = await import("../helpers/embla-mock");
-  return { default: helper.mockUseEmblaCarousel };
+  return { default: helper.useMockEmblaCarousel };
 });
 
 const SLIDE_COUNT = PHOTO_CAROUSEL_SLIDES.length;

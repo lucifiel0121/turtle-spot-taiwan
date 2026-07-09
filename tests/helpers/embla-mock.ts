@@ -86,7 +86,7 @@ export function resetLastEmblaApi(): void {
 }
 
 /** 取代 useEmblaCarousel：ref 掛上後即提供 mock api。 */
-export function mockUseEmblaCarousel() {
+export function useMockEmblaCarousel() {
   const [api, setApi] = useState<MockEmblaApi | undefined>(undefined);
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;
