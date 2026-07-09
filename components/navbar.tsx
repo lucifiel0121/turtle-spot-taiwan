@@ -46,8 +46,7 @@ export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
           className="px-3 md:px-4 xl:px-6"
           aria-label="Sounds"
         >
-          {/* 設計稿的喇叭 icon 為純黑（比 ink 底更深），忠實重現 */}
-          <Volume2 className="size-4 text-black xl:size-6" aria-hidden="true" />
+          <Volume2 className="size-4 xl:size-6" aria-hidden="true" />
         </button>
         <button
           type="button"
