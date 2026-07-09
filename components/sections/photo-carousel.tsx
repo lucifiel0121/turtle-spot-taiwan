@@ -92,6 +92,10 @@ function CarouselDots({ className }: { readonly className?: string }) {
  *   與 marquee 慣例一致）
  * - 任何互動（箭頭 / dot / 拖曳 / 鍵盤）立即暫停
  * - 閒置 AUTOPLAY_RESUME_IDLE_MS 後恢復自動播放
+ * - embla reInit（如 menu 的 body scroll-lock 使 scrollbar 消失、版面寬
+ *   變化觸發 ResizeObserver）會重建 plugin 為停止狀態，playOnInit: false
+ *   使其不自行重啟 → 監聽 reInit 接手恢復；互動暫停等待中則維持既有
+ *   語意交由 idle timer 屆時恢復（S5.6 缺陷 1 修復）
  * - 依 node_modules embla-carousel-autoplay@8.6.0 的 .d.ts 核對：內建選項為
  *   delay / jump / playOnInit / stopOnFocusIn / stopOnInteraction /
  *   stopOnMouseEnter / stopOnLastSnap / rootNode（v9 docs 的
@@ -109,20 +113,31 @@ function CarouselAutoplayController() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let idleTimerId = 0;
+    let idleResumePending = false;
     const pauseThenResumeWhenIdle = () => {
       autoplay.stop();
+      idleResumePending = true;
       window.clearTimeout(idleTimerId);
-      idleTimerId = window.setTimeout(
-        () => autoplay.play(),
-        AUTOPLAY_RESUME_IDLE_MS,
-      );
+      idleTimerId = window.setTimeout(() => {
+        idleResumePending = false;
+        autoplay.play();
+      }, AUTOPLAY_RESUME_IDLE_MS);
+    };
+    // reInit 後 plugin 回到停止狀態，這裡接手重啟；互動暫停的 idle timer
+    // 進行中則不插隊，保留「閒置滿 AUTOPLAY_RESUME_IDLE_MS 才恢復」語意。
+    // reduced-motion 時整個 effect 已提前 return、不掛此 listener。
+    const resumeAfterReInit = () => {
+      if (idleResumePending) return;
+      autoplay.play();
     };
 
     autoplay.play();
+    api.on("reInit", resumeAfterReInit);
     region.addEventListener("pointerdown", pauseThenResumeWhenIdle, true);
     region.addEventListener("keydown", pauseThenResumeWhenIdle, true);
     return () => {
       window.clearTimeout(idleTimerId);
+      api.off("reInit", resumeAfterReInit);
       region.removeEventListener("pointerdown", pauseThenResumeWhenIdle, true);
       region.removeEventListener("keydown", pauseThenResumeWhenIdle, true);
     };

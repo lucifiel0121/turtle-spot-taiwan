@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -123,12 +123,58 @@ describe("PhotoCarousel autoplay 暫停 / 閒置恢復", () => {
   it("unmount 清掉 listener 與 timer（不再恢復 play）", () => {
     vi.useFakeTimers();
     const { container, unmount } = render(<PhotoCarousel />);
-    const autoplay = getLastEmblaApi().plugins().autoplay;
+    const api = getLastEmblaApi();
+    const autoplay = api.plugins().autoplay;
     const region = container.querySelector("[data-slot='carousel']") as Element;
 
     fireEvent.pointerDown(region);
     unmount();
     vi.advanceTimersByTime(10000);
+    act(() => api.emit("reInit"));
     expect(autoplay.play).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * S5.6 缺陷 1 回歸：menu 的 body scroll-lock 造成版面寬變化 → embla reInit
+ * → plugin 重建為停止狀態且 playOnInit: false 不自行重啟。
+ * 修復後 controller 監聽 reInit 接手恢復播放。
+ */
+describe("PhotoCarousel reInit 後恢復 autoplay", () => {
+  it("reInit（如 menu 開關造成版面寬變化）後重新 play", () => {
+    render(<PhotoCarousel />);
+    const api = getLastEmblaApi();
+    const autoplay = api.plugins().autoplay;
+    expect(autoplay.play).toHaveBeenCalledTimes(1);
+
+    act(() => api.emit("reInit"));
+    expect(autoplay.play).toHaveBeenCalledTimes(2);
+  });
+
+  it("互動暫停等待期間 reInit 不插隊，仍由 idle timer 屆時恢復", () => {
+    vi.useFakeTimers();
+    const { container } = render(<PhotoCarousel />);
+    const api = getLastEmblaApi();
+    const autoplay = api.plugins().autoplay;
+    const region = container.querySelector("[data-slot='carousel']") as Element;
+
+    fireEvent.pointerDown(region);
+    expect(autoplay.stop).toHaveBeenCalledTimes(1);
+    act(() => api.emit("reInit"));
+    // 閒置未滿 AUTOPLAY_RESUME_IDLE_MS，reInit 不得提前恢復
+    expect(autoplay.play).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(6000);
+    expect(autoplay.play).toHaveBeenCalledTimes(2);
+  });
+
+  it("prefers-reduced-motion: reduce 時 reInit 也不啟動 autoplay", () => {
+    setMatchMediaMatches(true);
+    render(<PhotoCarousel />);
+    const api = getLastEmblaApi();
+    const autoplay = api.plugins().autoplay;
+
+    act(() => api.emit("reInit"));
+    expect(autoplay.play).not.toHaveBeenCalled();
   });
 });

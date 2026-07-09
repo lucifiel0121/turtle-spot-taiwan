@@ -135,7 +135,7 @@
 | 1 | 首頁載入 | PASS | title「Turtle Spot Taiwan｜海龜目擊回報」；`/favicon.ico` 200；console 0 error 0 warning；`waitUntil: commit` 早期截圖已完整樣式，無 FOUC/版面跳動 |
 | 2 | 全頁捲動 | PASS | 六 section DOM 順序與視覺皆正確（navbar→hero→turtle-profile→carousel→dive-sites→witness-story→footer）；跑馬燈 `marquee-scroll` 15s 實測位移 -191px/0.8s；`scrollWidth == clientWidth`（1425/1425）無水平溢出；圖片無變形裂圖 |
 | 3 | Menu | PASS | 開啟後 dialog 含五導覽項（Map/Article/About/Resources/Report Sightings）＋聯絡（info@gmail.com）＋追蹤（facebook/instagram）；Esc 關閉、`aria-expanded` 同步 false |
-| 4 | Carousel | **FAIL（見缺陷 1）** | 單獨看各項皆過：載入即自動播（每 4s：0→1→2→3）、Next/Prev 箭頭含 loop（5→0、0→5）、dot 跳頁、拖曳換頁、互動暫停後閒置 ~6s 恢復自動播（實測 2→3→4→5）。但開過 menu 後自動播**永久停止**（缺陷 1） |
+| 4 | Carousel | **FAIL→修復→PASS** | 單獨看各項皆過：載入即自動播（每 4s：0→1→2→3）、Next/Prev 箭頭含 loop（5→0、0→5）、dot 跳頁、拖曳換頁、互動暫停後閒置 ~6s 恢復自動播（實測 2→3→4→5）。原「開過 menu 後自動播永久停止」缺陷已修復並複驗（見缺陷 1 修復記錄） |
 | 5 | Story | PASS | 箭頭連按 10 次翻完 10 則且 loop 回第 1 則；null 欄位卡片無空殼（3/5/7 無 `post_link` → 無 VIEW POST 與動作列；4/7/9/10 無 description → 不渲染空 chip）；dots 跳頁（實測跳第 7 則）；swipe 左右換頁（7→8→7） |
 | 6 | VIEW POST | PASS | 實點開啟新分頁（tabs 1→2）至 API `post_link`；`target="_blank"` + `rel="noopener noreferrer"`。新分頁 DNS 錯誤屬 mock 資料網域（ji.biz），非產品問題 |
 | 7 | 375 抽驗 | PASS | 載入 console 乾淨、無水平溢出（360/360）；單欄版面正常、carousel 箭頭移至 dots 兩側；menu 開啟/Esc 關閉；story swipe 1→2 |
@@ -147,6 +147,10 @@
    - 重現：載入 → 開 menu → Esc 關閉 → carousel 此後 10s+ 不再自動換頁（正常 4s 一次）；亦可用 `document.body.style.overflow='hidden'` 1.5s 後還原單獨重現。
    - 機制（依 live 實驗＋程式碼推定）：menu 開啟鎖 body scroll（`fullscreen-menu.tsx:26`）→ scrollbar 消失使版面寬變化 → embla ResizeObserver `reInit` → autoplay 因 `playOnInit: false`（`photo-carousel.tsx:248`）不會自行重啟；`CarouselAutoplayController` 的恢復 timer 只掛在 carousel 區域的 pointerdown/keydown，menu 互動不在其上，故永不恢復。
    - 影響範圍註記：僅在 scrollbar 佔版面寬的環境重現（Windows、macOS 接滑鼠/classic scrollbar、Playwright 預設）；macOS overlay scrollbar 可能無感。面試官走「開 menu 看導覽 → 關閉 → 往下看 carousel」即會遇到。
+   - **已修復＋複驗 PASS（2026-07-10）**：
+     - 修法：`CarouselAutoplayController` 監聽 embla `reInit` 事件接手恢復播放（`photo-carousel.tsx`）；互動暫停的 idle timer 進行中則不插隊，保留「閒置滿 6s 才恢復」語意；`prefers-reduced-motion: reduce` 時整個 effect 提前 return、不掛 reInit listener，維持不自動播；cleanup 同步 `api.off("reInit")`。選 reInit 監聽而非 `scrollbar-gutter: stable` 源頭修：reInit 另有視窗 resize / zoom 等來源，監聽可修掉整類問題，且不在 classic scrollbar 環境常駐右側留溝偏離設計稿。
+     - unit（`tests/components/photo-carousel.test.tsx` 新增 3 案例）：mock api `emit("reInit")` 後 `autoplay.play` 重呼叫；互動暫停等待期間 reInit 不提前恢復、仍由 idle timer 恢復；reduced-motion 下 reInit 不啟動；unmount 後 reInit 不再觸發 play。`pnpm test` 綠（11 files / 87 tests）。
+     - headed 複驗（production build + Chromium headed，注入 `::-webkit-scrollbar{width:16px}` 強制 classic scrollbar，clientWidth 1424 證實 scrollbar 佔寬）：①原缺陷流程——點 MENU 開啟（`body.overflow=hidden`、clientWidth 1424→1440 證實 reInit 觸發條件成立）→ 1.5s 後 Esc 關閉（1440→1424，再一次 reInit）→ 閒置觀察 13.5s，dot 1→2→3→4 持續前進，自動播未死亡；②最小重現路徑——`document.body.style.overflow='hidden'` 1.5s 後還原，觀察 10s dot 3→4→5 持續前進；③原行為回歸——實點 Next 箭頭後 5s 不前進（互動暫停保持）、12s 時前進（閒置 6s 恢復 + 4s delay），與 S5.5 記錄語意一致。
 2. **[粗糙·輕] README 模板殘留**：Getting Started 之外仍是 create-next-app 樣板 — 引用不存在的 `pages/api/hello.ts`（repo 無 `pages/api/`）、next/font Geist 與 Vercel deploy 段落與本專案無關。
 3. **[粗糙·輕] 無 description 的 story 卡下半大面積留黑**（僅日期＋標題，如第 7 則）：非空殼、不突兀到破版，但視覺重心偏上。
 4. **[粗糙·極輕] head 無明式 favicon `<link>`**：靠瀏覽器預設抓 `/favicon.ico`（200 正常），分頁 icon 有顯示。
@@ -156,4 +160,4 @@
 
 ### 總判定
 
-**REJECT（有條件）**：核心互動存在一項確定性功能缺陷（缺陷 1，menu → carousel 自動播死亡），修復並複驗該項後其餘流程可直接沿用本報告結論。缺陷 2（README）建議一併處理——面試官幾乎必讀 README。本驗收僅記錄不修復（驗收者不下場）。
+**ACCEPT**（2026-07-10 更新）：原判定 REJECT（有條件）所繫的唯一功能缺陷（缺陷 1，menu → carousel 自動播死亡）已修復並完成 headed 複驗（原缺陷流程、最小重現路徑、互動暫停/閒置恢復回歸三項皆 PASS），`pnpm test`（87 tests）/ `pnpm build` / `tsc --noEmit` 全綠；依原判定條件「修復並複驗該項後其餘流程可直接沿用本報告結論」，總判定改為 ACCEPT。缺陷 2（README 模板殘留）等粗糙感項目維持記錄、另案處理。
