@@ -1,6 +1,7 @@
 import type { GetStaticProps, InferGetStaticPropsType } from "next";
 
 import { Section, SectionContainer } from "@/components/layout/section";
+import { Navbar } from "@/components/navbar";
 import { fetchActivities, useActivities } from "@/lib/activities";
 import type { Activity } from "@/types/activity";
 
@@ -60,8 +61,9 @@ export default function Home({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Section as="header" id="navbar" background="brand-soft" padding="compact">
-        <SectionPlaceholder label="Navbar" />
+      <Section as="header" id="navbar" background="brand-soft" padding="none">
+        {/* Navbar 為滿版 bar（右側深色塊貼齊視窗右緣），不走 SectionContainer */}
+        <Navbar />
       </Section>
       <Section id="hero-information" background="brand-soft" padding="spacious">
         <SectionPlaceholder label="Hero Information" />
