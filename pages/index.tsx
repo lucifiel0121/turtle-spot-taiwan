@@ -5,6 +5,7 @@ import { FullscreenMenu } from "@/components/fullscreen-menu";
 import { Section, SectionContainer } from "@/components/layout/section";
 import { Navbar } from "@/components/navbar";
 import { DiveSites } from "@/components/sections/dive-sites";
+import { Footer } from "@/components/sections/footer";
 import { HeroInformation } from "@/components/sections/hero";
 import { TurtleProfile } from "@/components/sections/turtle-profile";
 import { fetchActivities, useActivities } from "@/lib/activities";
@@ -111,8 +112,9 @@ export default function Home({
           </ul>
         </SectionContainer>
       </Section>
-      <Section as="footer" id="footer" background="brand" padding="default">
-        <SectionPlaceholder label="Footer" />
+      <Section as="footer" id="footer" background="brand" padding="none">
+        {/* S2.7 Footer：內距由 Footer 依截圖量測自控（大字/©/contact/sponsor 定位） */}
+        <Footer />
       </Section>
     </div>
   );
