@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar";
 import { DiveSites } from "@/components/sections/dive-sites";
 import { Footer } from "@/components/sections/footer";
 import { HeroInformation } from "@/components/sections/hero";
+import { PhotoCarousel } from "@/components/sections/photo-carousel";
 import { TurtleProfile } from "@/components/sections/turtle-profile";
 import { fetchActivities, useActivities } from "@/lib/activities";
 import type { Activity } from "@/types/activity";
@@ -90,8 +91,9 @@ export default function Home({
         {/* S2.5 資料卡屬 hero 青色帶；卡片下緣與 carousel 灰帶齊平（截圖量測無間隙） */}
         <TurtleProfile />
       </Section>
-      <Section id="photo-carousel" background="surface-mist" padding="spacious">
-        <SectionPlaceholder label="Photo Carousel" />
+      <Section id="photo-carousel" background="ink" padding="none">
+        {/* S3.1 灰帶圓角容器由 PhotoCarousel 自帶（底部圓角 32），section 背景 ink 供圓角缺口透出 */}
+        <PhotoCarousel />
       </Section>
       <Section id="favorite-dive-site" background="brand-soft" padding="none">
         {/* S2.6 黑底由 DiveSites 自帶（含底部圓角 24），section 背景青色供圓角缺口透出 */}
