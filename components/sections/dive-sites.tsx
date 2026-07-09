@@ -13,8 +13,10 @@ import { DIVE_MARQUEE_WORDS, DIVE_SITE_CARDS } from "@/content/dive-sites";
  *   垂直中線在區塊 ≈48%；pin 疊於跑馬燈之上（大字穿過 pin 後方）
  * - 青 pin（花瓶岩）：左 163/1440=11.3%、上 97/838=11.6%、寬 282
  * - 白 pin（美人洞）：左 913/1440=63.4%、上 366/838=43.7%、寬 282
- * - Pad/Mobile 無獨立設計稿：Pad 依 0.75 縮放維持錯落、Mobile 直排置中
- *   （規格指定直排），字級同比 0.75 / 0.55，屬記錄中的假設
+ * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖）：Pad 區塊高 ≈756px、
+ *   pin 寬 ≈212 維持、錯落位置與縮圖吻合；Mobile 直排置中與縮圖吻合；
+ *   跑馬燈字級縮圖實測 md ≈0.58×desktop、base ≈0.42×desktop
+ *   （blur ±10%，取 112/81px）
  */
 const MARQUEE_DURATION_SECONDS = 15;
 
@@ -25,19 +27,19 @@ export function DiveSites() {
       <div className="absolute inset-x-0 top-[48%] -translate-y-1/2">
         <Marquee
           durationSeconds={MARQUEE_DURATION_SECONDS}
-          className="w-full font-display text-[106px] font-semibold leading-none text-ink-soft md:text-[144px] xl:text-[193px]"
+          className="w-full font-display text-[81px] font-semibold leading-none text-ink-soft md:text-[112px] xl:text-[193px]"
         >
           {DIVE_MARQUEE_WORDS.map((word, index) => (
             <span
               key={`${word}-${index}`}
-              className="whitespace-nowrap pr-11 md:pr-15 xl:pr-20"
+              className="whitespace-nowrap pr-8 md:pr-11 xl:pr-20"
             >
               {word}
             </span>
           ))}
         </Marquee>
       </div>
-      <div className="relative flex flex-col items-center gap-14 py-20 md:block md:h-[628px] md:py-0 xl:h-[838px]">
+      <div className="relative flex flex-col items-center gap-14 py-20 md:block md:h-[756px] md:py-0 xl:h-[838px]">
         <MapPinCard
           {...DIVE_SITE_CARDS.primary}
           className="w-[180px] md:absolute md:left-[11.3%] md:top-[11.6%] md:w-[212px] xl:w-[282px]"

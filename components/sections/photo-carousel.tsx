@@ -26,8 +26,10 @@ import { cn } from "@/lib/utils";
  * - 黑圓箭頭直徑約 56px、白色 chevron；Desktop 置於間距中點
  *   （中心距視窗左/右緣約 17.2% 寬）、垂直對齊大圖中心
  * - dots：白色 8px 圓點、間距 12px；當前頁為黑色 24x8 長條
- * - Pad/Mobile 無獨立設計稿：箭頭與 dots 移至圖下方並排（使用者截圖證實），
- *   slide 佔比放大屬假設；autoplay 與 scale/opacity tween 為 S3.2 範圍
+ * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖）：主圖佔比 Pad ≈90% /
+ *   Mobile ≈88% 視寬、側邊留白 ≈38/25px、鄰圖幾乎無 peek（≈1%）；
+ *   圖下箭頭直徑 ≈43px 且與 dots 幾乎相貼（列總寬 ≈210px）；
+ *   區塊 padding：上 ≈80px 兩檔、下 Pad ≈56 / Mobile ≈96px
  */
 
 /** autoplay 換頁間隔。 */
@@ -40,7 +42,7 @@ const TWEEN_SCALE_RANGE = 0.12;
 const TWEEN_OPACITY_RANGE = 0.45;
 
 const SLIDE_CLASS =
-  "basis-[84%] px-[2.5%] md:basis-[76%] md:px-[3%] xl:basis-[65.6%] xl:px-[7.8%]";
+  "basis-[93%] px-[2.5%] md:basis-[94%] md:px-[2%] xl:basis-[65.6%] xl:px-[7.8%]";
 
 const ARROW_CLASS =
   "border-0 bg-ink text-foam hover:bg-ink/85 hover:text-foam [&_svg:not([class*='size-'])]:size-6";
@@ -213,7 +215,7 @@ function SlideImage({ slide }: { readonly slide: PhotoCarouselSlide }) {
         alt={slide.alt}
         width={720}
         height={540}
-        sizes="(min-width: 1280px) 50vw, (min-width: 768px) 70vw, 79vw"
+        sizes="(min-width: 1280px) 50vw, (min-width: 768px) 90vw, 88vw"
         className="aspect-[4/3] w-full rounded-lg object-cover"
       />
     </div>
@@ -230,7 +232,7 @@ export function PhotoCarousel() {
   );
 
   return (
-    <div className="rounded-b-4xl bg-surface-mist pt-10 pb-8 md:pt-16 md:pb-10 xl:pt-26 xl:pb-18">
+    <div className="rounded-b-4xl bg-surface-mist pt-20 pb-24 md:pb-14 xl:pt-26 xl:pb-18">
       <Carousel
         opts={{ loop: true, align: "center" }}
         plugins={[autoplayPlugin.current]}
@@ -261,13 +263,13 @@ export function PhotoCarousel() {
             )}
           />
         </div>
-        <div className="mt-5 flex items-center justify-center gap-6 md:mt-6 xl:mt-8">
+        <div className="mt-5 flex items-center justify-center gap-2 md:mt-6 xl:mt-8">
           <CarouselPrevious
-            className={cn(ARROW_CLASS, "static my-0 size-12 xl:hidden")}
+            className={cn(ARROW_CLASS, "static my-0 size-11 xl:hidden")}
           />
           <CarouselDots />
           <CarouselNext
-            className={cn(ARROW_CLASS, "static my-0 size-12 xl:hidden")}
+            className={cn(ARROW_CLASS, "static my-0 size-11 xl:hidden")}
           />
         </div>
       </Carousel>

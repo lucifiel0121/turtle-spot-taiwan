@@ -8,7 +8,10 @@ import { FOOTER } from "@/content/footer";
  * - "© 2021 Turtle Spot Taiwan"：左 83、距帶底 141、字級 ≈16
  * - contact 欄：左 880、距帶頂 113、行進 ≈36（字級 ≈18）
  * - sponsor 欄：左 1140、logo 寬 ≈118、右緣 1258（→ 右 padding 182）
- * - Pad/Mobile 無獨立設計稿：直排 title → contact → sponsor → ©，屬記錄中的假設
+ * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖）：兩檔皆為單欄
+ *   「title → © → email/Facebook/Instagram」，無 "contact us :" label、
+ *   無 sponsor 區塊（僅 Desktop 有）；px ≈28、上下 padding ≈80、
+ *   title 32px、© 緊接 title 下（間距 ≈24）、連結區距 © ≈48
  */
 
 type WalkingFigureProps = {
@@ -64,11 +67,14 @@ function SponsorLogo() {
   );
 }
 
-/** contact us 欄：email 走 mailto:，社群連結目前為佔位（見 content/footer.ts）。 */
+/**
+ * contact us 欄：email 走 mailto:，社群連結目前為佔位（見 content/footer.ts）。
+ * "contact us :" label 僅 Desktop 顯示（Pad/Mobile 設計稿無此 label）。
+ */
 function ContactColumn() {
   return (
     <div className="flex flex-col gap-[18px] text-lg font-medium leading-none text-ink">
-      <p>{FOOTER.contact.label}</p>
+      <p className="hidden xl:block">{FOOTER.contact.label}</p>
       {FOOTER.contact.links.map((link) => (
         <a key={link.label} href={link.href} className="w-fit hover:underline">
           {link.label}
@@ -78,25 +84,28 @@ function ContactColumn() {
   );
 }
 
-/** Footer：青底、大字標題左上、© 左下、contact + sponsor 兩欄靠右。 */
+/**
+ * Footer：Desktop 青底大字標題左上、© 左下、contact + sponsor 兩欄靠右；
+ * Pad/Mobile 單欄 title → © → 連結，sponsor 區塊不顯示。
+ */
 export function Footer() {
   return (
-    <div className="relative flex flex-col gap-10 px-4 py-12 md:px-8 xl:h-[380px] xl:flex-row xl:justify-between xl:gap-0 xl:pb-0 xl:pl-[83px] xl:pr-[182px] xl:pt-[60px]">
+    <div className="relative flex flex-col px-7 py-20 xl:h-[380px] xl:flex-row xl:justify-between xl:pb-0 xl:pl-[83px] xl:pr-[182px] xl:pt-[60px]">
       <p className="font-display text-[32px] font-semibold leading-none text-ink xl:text-[42px]">
         {FOOTER.title}
       </p>
-      <div className="flex flex-col gap-10 md:flex-row md:gap-16 xl:gap-[71px] xl:pt-[53px]">
+      <p className="mt-6 text-base font-medium leading-none text-ink xl:absolute xl:bottom-[141px] xl:left-[83px] xl:mt-0">
+        {FOOTER.copyright}
+      </p>
+      <div className="mt-12 flex flex-col xl:mt-0 xl:flex-row xl:gap-[71px] xl:pt-[53px]">
         <ContactColumn />
-        <div className="flex flex-col gap-4">
+        <div className="hidden flex-col gap-4 xl:flex">
           <p className="text-lg font-medium leading-none text-ink">
             {FOOTER.sponsor.label}
           </p>
           <SponsorLogo />
         </div>
       </div>
-      <p className="text-base font-medium leading-none text-ink xl:absolute xl:bottom-[141px] xl:left-[83px]">
-        {FOOTER.copyright}
-      </p>
     </div>
   );
 }

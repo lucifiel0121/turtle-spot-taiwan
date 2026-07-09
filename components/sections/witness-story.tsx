@@ -22,8 +22,11 @@ import type { Activity } from "@/types/activity";
  *   卡片與箭頭疊於跑馬燈之上
  * - 卡片內容（首屏）：日期 → 標題白 chip → 描述白 chip，置中直排；
  *   VIEW POST pill：brand-soft 底 + ink 字，約 146x44、距卡底約 80
- * - Pad/Mobile 無獨立設計稿：卡片 420x600 / 256x456 同比縮，屬記錄假設；
- *   跑馬燈 top 值 = 卡片上緣 padding + 卡高一半（對齊卡片中心）
+ * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖）：卡片 Pad ≈507x676 /
+ *   Mobile ≈306x490、底緣皆貼齊 footer；Mobile 區塊上緣 ≈40px（pt-10）；
+ *   跑馬燈 top 值 = 卡片上緣 padding + 卡高一半（對齊卡片中心，隨卡片
+ *   尺寸重算）；字級縮圖實測 md ≈0.58×desktop、base ≈0.42×desktop
+ *   （blur ±10%，取 112/81px）
  *
  * S3.4 內容改串 API activities（Figma spec：由上到下 date → title →
  * description → post_link；後端為 null 的欄位整節點不渲染）。
@@ -99,7 +102,7 @@ function StoryStatusCard({ message }: { readonly message: string }) {
   return (
     <div
       role="status"
-      className="flex h-[456px] w-[256px] items-center justify-center rounded-t-3xl bg-ink px-8 text-center text-sm text-foam md:h-[600px] md:w-[420px] md:text-base xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
+      className="flex h-[490px] w-[306px] items-center justify-center rounded-t-3xl bg-ink px-8 text-center text-sm text-foam md:h-[676px] md:w-[507px] md:text-base xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
     >
       {message}
     </div>
@@ -125,7 +128,7 @@ type WitnessStoryProps = {
 
 /**
  * Witness story 段落：白字跑馬燈置於卡片中心高度，story viewer 疊於其上。
- * 跑馬燈 top = 卡片上緣 padding + 卡高/2（base 64+228 / md 80+300 / xl 81+340）。
+ * 跑馬燈 top = 卡片上緣 padding + 卡高/2（base 40+245 / md 80+338 / xl 81+340）。
  * S3.4：卡片內容串 useActivities（SWR + ISR fallback），dots 數量 = 資料筆數。
  */
 export function WitnessStory({ fallbackActivities }: WitnessStoryProps) {
@@ -138,22 +141,22 @@ export function WitnessStory({ fallbackActivities }: WitnessStoryProps) {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="absolute inset-x-0 top-[292px] -translate-y-1/2 md:top-[380px] xl:top-[421px]">
+      <div className="absolute inset-x-0 top-[285px] -translate-y-1/2 md:top-[418px] xl:top-[421px]">
         <Marquee
           durationSeconds={MARQUEE_DURATION_SECONDS}
-          className="w-full font-display text-[106px] font-semibold leading-none text-foam md:text-[144px] xl:text-[193px]"
+          className="w-full font-display text-[81px] font-semibold leading-none text-foam md:text-[112px] xl:text-[193px]"
         >
           {WITNESS_MARQUEE_WORDS.map((word, index) => (
             <span
               key={`${word}-${index}`}
-              className="whitespace-nowrap pr-11 md:pr-15 xl:pr-20"
+              className="whitespace-nowrap pr-8 md:pr-11 xl:pr-20"
             >
               {word}
             </span>
           ))}
         </Marquee>
       </div>
-      <div className="relative flex justify-center pt-16 md:pt-20 xl:pt-[81px]">
+      <div className="relative flex justify-center pt-10 md:pt-20 xl:pt-[81px]">
         {statusMessage === null ? (
           <StoryViewer
             items={activities}

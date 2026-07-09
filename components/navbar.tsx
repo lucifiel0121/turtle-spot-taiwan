@@ -12,6 +12,8 @@ type NavbarProps = {
  * - 左半 brand-soft 底 + logo（四角取景框 mark + 站名）
  * - 右半 ink 深色塊（bottom-left 圓角），三鈕以 1px 分隔線隔開
  * - 高度 RWD：Desktop(xl) 64px / Pad・Mobile 40px
+ * - S4.1 Pad/Mobile 設計稿（768/375 整頁縮圖）：MENU 鈕僅剩漢堡 icon，
+ *   無 "MENU" 字樣 → 文字 xl 才顯示
  * language / sounds 鈕行為設計未定義，先渲染不接行為。
  */
 export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
@@ -55,7 +57,7 @@ export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
           aria-expanded={menuOpen}
         >
           <Equal className="size-4 xl:size-5" aria-hidden="true" />
-          <span>MENU</span>
+          <span className="hidden xl:inline">MENU</span>
         </button>
       </div>
     </div>

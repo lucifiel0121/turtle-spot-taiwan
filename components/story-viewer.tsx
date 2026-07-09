@@ -20,7 +20,9 @@ import { cn } from "@/lib/utils";
  * - 左右箭頭：黑圓（ink）直徑約 70、白 chevron，垂直置中對齊卡片，
  *   距卡片邊緣約 46；設計稿箭頭恆顯示、無 disabled 樣式線索 → 首末頁採
  *   loop 循環（與 photo-carousel loop:true 慣例一致）
- * - Pad/Mobile 無獨立設計稿：卡片與箭頭同比縮小，屬記錄中的假設
+ * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖）：卡片 Pad ≈507x676 /
+ *   Mobile ≈306x490；Pad 箭頭直徑 ≈76、距卡緣 ≈12；Mobile 設計稿無側邊
+ *   箭頭（導覽靠 swipe 與 dots）→ 箭頭 md 起才顯示
  */
 
 /** 手勢判定：水平位移達此門檻才視為換頁滑動。 */
@@ -128,14 +130,14 @@ function ArrowButton({ direction, onClick }: ArrowButtonProps) {
       onClick={onClick}
       aria-label={direction === "next" ? "下一則" : "上一則"}
       className={cn(
-        "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full bg-ink text-foam transition-opacity hover:opacity-85",
-        "size-10 md:size-12 xl:size-[70px]",
+        "absolute top-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-foam transition-opacity hover:opacity-85",
+        "hidden md:flex md:size-[76px] xl:size-[70px]",
         direction === "next"
-          ? "left-full ml-4 md:ml-6 xl:ml-[46px]"
-          : "right-full mr-4 md:mr-6 xl:mr-[46px]",
+          ? "left-full md:ml-3 xl:ml-[46px]"
+          : "right-full md:mr-3 xl:mr-[46px]",
       )}
     >
-      <Icon className="size-5 md:size-6 xl:size-8" aria-hidden="true" />
+      <Icon className="size-8" aria-hidden="true" />
     </button>
   );
 }
@@ -204,7 +206,7 @@ export function StoryViewer<T>({
         role="region"
         aria-label={label}
         {...swipeHandlers}
-        className="flex h-[456px] w-[256px] touch-pan-y select-none flex-col overflow-hidden rounded-t-3xl bg-ink md:h-[600px] md:w-[420px] xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
+        className="flex h-[490px] w-[306px] touch-pan-y select-none flex-col overflow-hidden rounded-t-3xl bg-ink md:h-[676px] md:w-[507px] xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
       >
         <ProgressDots
           count={items.length}

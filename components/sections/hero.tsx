@@ -16,8 +16,11 @@ import { Marquee } from "@/components/marquee";
  *   footer），故此處不放；如 Figma 原稿 Hero 另有 logo 節點屬疑義，記錄不擅加
  * - 圓照海龜朝向：設計稿為 public/images/hero-turtle.jpeg 的水平鏡像
  *   （頭朝右），以 -scale-x-100 翻轉對齊設計
- * - Pad/Mobile 無獨立設計稿：依 Desktop 圓徑比例縮放（md 300px、base 220px，
- *   字級與間隔同比 0.75 / 0.55），屬記錄中的假設
+ * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖，藍框內容換算回視寬）：
+ *   圓徑 md 300 / base 220 與縮圖吻合維持；圓照上緣距 navbar 兩檔皆 ≈81px
+ *   （pt-20）、Pad 下緣距資料卡 tab ≈86px（md:pb-20）；跑馬燈字級縮圖實測
+ *   md ≈0.58×desktop、base ≈0.42×desktop（cap 高換算，blur ±10%，
+ *   取 107/78px），詞間隔同比縮小
  */
 const HERO_MARQUEE_WORDS = ["Information", "Information", "Information"] as const;
 
@@ -26,16 +29,16 @@ const MARQUEE_DURATION_SECONDS = 15;
 /** Hero Information：跑馬燈大字置底，圓形海龜照置中疊於其上。 */
 export function HeroInformation() {
   return (
-    <div className="relative flex flex-col items-center py-10 md:py-14 xl:py-20">
+    <div className="relative flex flex-col items-center pb-10 pt-20 md:pb-20 xl:py-20">
       <div className="absolute inset-0 flex items-center">
         <Marquee
           durationSeconds={MARQUEE_DURATION_SECONDS}
-          className="w-full translate-y-[0.07em] font-display text-[102px] font-semibold leading-none text-foam md:text-[139px] xl:text-[185px]"
+          className="w-full translate-y-[0.07em] font-display text-[78px] font-semibold leading-none text-foam md:text-[107px] xl:text-[185px]"
         >
           {HERO_MARQUEE_WORDS.map((word, index) => (
             <span
               key={`${word}-${index}`}
-              className="whitespace-nowrap pr-11 md:pr-15 xl:pr-20"
+              className="whitespace-nowrap pr-8 md:pr-11 xl:pr-20"
             >
               {word}
             </span>
