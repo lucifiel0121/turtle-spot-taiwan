@@ -1,16 +1,14 @@
 import type { GetStaticProps } from "next";
 import Head from "next/head";
-import { useCallback, useState } from "react";
 
-import { FullscreenMenu } from "@/components/fullscreen-menu";
 import { Section } from "@/components/layout/section";
-import { Navbar } from "@/components/navbar";
 import { DiveSites } from "@/components/sections/dive-sites";
 import { Footer } from "@/components/sections/footer";
 import { HeroInformation } from "@/components/sections/hero";
 import { PhotoCarousel } from "@/components/sections/photo-carousel";
 import { TurtleProfile } from "@/components/sections/turtle-profile";
 import { WitnessStory } from "@/components/sections/witness-story";
+import { SiteHeader } from "@/components/site-header";
 import { fetchActivities } from "@/lib/activities";
 import type { Activity } from "@/types/activity";
 
@@ -44,10 +42,6 @@ export const getStaticProps: GetStaticProps<HomeProps> = async () => {
  * 首屏直出 API 內容、client 端背景 revalidate。
  */
 export default function Home({ fallbackActivities }: HomeProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const toggleMenu = useCallback(() => setMenuOpen((open) => !open), []);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
-
   return (
     <div className="flex min-h-screen flex-col">
       <Head>
@@ -57,17 +51,7 @@ export default function Home({ fallbackActivities }: HomeProps) {
           content="Turtle Spot Taiwan 海龜點點名：認識台灣海龜、探索熱門潛點，即時追蹤與回報海龜目擊動態。"
         />
       </Head>
-      {/* header 疊在全螢幕選單（z-40）之上，選單開啟時 menu 鈕仍可點擊關閉 */}
-      <Section
-        as="header"
-        id="navbar"
-        background="brand-soft"
-        className="relative z-50"
-      >
-        {/* Navbar 為滿版 bar（右側深色塊貼齊視窗右緣），不走 SectionContainer */}
-        <Navbar onMenuClick={toggleMenu} menuOpen={menuOpen} />
-      </Section>
-      <FullscreenMenu open={menuOpen} onClose={closeMenu} />
+      <SiteHeader />
       <Section id="hero-information" background="brand-soft">
         {/* S2.4 Hero：上下留白由 HeroInformation 依截圖量測自控（非 spacious 齊一值） */}
         <HeroInformation />

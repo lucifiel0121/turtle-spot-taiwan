@@ -34,7 +34,9 @@ export const useActivities = (fallbackData?: readonly Activity[]) => {
   const { data, error, isLoading } = useSWR<readonly Activity[]>(
     ACTIVITIES_QUERY,
     fetchActivities,
-    { fallbackData },
+    // 頁面近靜態（ISR 1h）：關閉切回分頁時的 revalidate，
+    // 保留 mount 時一次背景更新即可
+    { fallbackData, revalidateOnFocus: false },
   );
 
   return {

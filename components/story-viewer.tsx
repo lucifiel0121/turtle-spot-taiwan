@@ -182,6 +182,68 @@ type StoryView = {
   readonly direction: StoryDirection;
 };
 
+/** 換頁 state 與箭頭／dots／swipe 導覽邏輯（loop 與 clamp 決策見純函式註解）。 */
+function useStoryNavigation(itemCount: number) {
+  const [view, setView] = useState<StoryView>({ index: 0, direction: "next" });
+
+  const step = useCallback(
+    (direction: StoryDirection) => {
+      const offset = direction === "next" ? 1 : -1;
+      // 先 clamp 再位移：SWR revalidation 縮減 items 後，以畫面上實際顯示的
+      // index 為換頁基準，避免 stale index 造成跳頁不連續
+      setView((prev) => ({
+        index: wrapIndex(clampIndex(prev.index, itemCount) + offset, itemCount),
+        direction,
+      }));
+    },
+    [itemCount],
+  );
+
+  const jumpTo = useCallback(
+    (target: number) => {
+      setView((prev) => ({
+        index: wrapIndex(target, itemCount),
+        direction: target >= prev.index ? "next" : "prev",
+      }));
+    },
+    [itemCount],
+  );
+
+  const swipeHandlers = useSwipeNavigation(step);
+  return { view, step, jumpTo, swipeHandlers };
+}
+
+type StorySlideProps = {
+  readonly direction: StoryDirection;
+  readonly children: ReactNode;
+};
+
+/**
+ * 內容進場動畫容器：呼叫端以 key=index 於換頁時重掛載以重播動畫；
+ * transform + opacity only，reduced-motion 時關閉。
+ */
+function StorySlide({ direction, children }: StorySlideProps) {
+  return (
+    <div
+      className={cn(
+        "flex min-h-0 flex-1 flex-col",
+        "animate-in fade-in duration-500 motion-reduce:animate-none",
+        direction === "next" ? "slide-in-from-right-8" : "slide-in-from-left-8",
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** 底部動作列容器：action 為 null（如 post_link null）時連容器不渲染，不留空殼 DOM。 */
+function StoryActionBar({ action }: { readonly action: ReactNode }) {
+  if (action === null) return null;
+  return (
+    <div className="flex justify-center pb-8 md:pb-12 xl:pb-20">{action}</div>
+  );
+}
+
 type StoryViewerProps<T> = {
   /** 動態資料；dots 數量與換頁範圍由筆數決定（S3.4 直接餵 Activity[]）。 */
   readonly items: ReadonlyArray<T>;
@@ -205,44 +267,15 @@ export function StoryViewer<T>({
   label,
   className,
 }: StoryViewerProps<T>) {
-  const [view, setView] = useState<StoryView>({ index: 0, direction: "next" });
-
-  const step = useCallback(
-    (direction: StoryDirection) => {
-      const offset = direction === "next" ? 1 : -1;
-      // 先 clamp 再位移：SWR revalidation 縮減 items 後，以畫面上實際顯示的
-      // index 為換頁基準，避免 stale index 造成跳頁不連續
-      setView((prev) => ({
-        index: wrapIndex(
-          clampIndex(prev.index, items.length) + offset,
-          items.length,
-        ),
-        direction,
-      }));
-    },
-    [items.length],
+  const { view, step, jumpTo, swipeHandlers } = useStoryNavigation(
+    items.length,
   );
-
-  const jumpTo = useCallback(
-    (target: number) => {
-      setView((prev) => ({
-        index: wrapIndex(target, items.length),
-        direction: target >= prev.index ? "next" : "prev",
-      }));
-    },
-    [items.length],
-  );
-
-  const swipeHandlers = useSwipeNavigation(step);
   // 渲染用 index 以 items 當下筆數 clamp（derived，不 setState）：
   // SWR revalidation 使 items 縮減到少於 state index 時仍渲染合法末筆，
   // 不會整個 viewer 空白；items 為空陣列時維持既有的不渲染行為
   const index = clampIndex(view.index, items.length);
   const currentItem = items[index];
   if (currentItem === undefined) return null;
-
-  // renderAction 回傳 null（如 post_link 為 null）時連容器一併不渲染，不留空殼 DOM
-  const action = renderAction?.(currentItem, index) ?? null;
 
   return (
     <div className={cn("relative", className)}>
@@ -257,24 +290,10 @@ export function StoryViewer<T>({
       >
         <ProgressDots count={items.length} current={index} onSelect={jumpTo} />
         {header}
-        {/* key 換頁重掛載以重播進場動畫；transform+opacity only，reduced-motion 關閉 */}
-        <div
-          key={index}
-          className={cn(
-            "flex min-h-0 flex-1 flex-col",
-            "animate-in fade-in duration-500 motion-reduce:animate-none",
-            view.direction === "next"
-              ? "slide-in-from-right-8"
-              : "slide-in-from-left-8",
-          )}
-        >
+        <StorySlide key={index} direction={view.direction}>
           {renderItem(currentItem, index)}
-        </div>
-        {action !== null ? (
-          <div className="flex justify-center pb-8 md:pb-12 xl:pb-20">
-            {action}
-          </div>
-        ) : null}
+        </StorySlide>
+        <StoryActionBar action={renderAction?.(currentItem, index) ?? null} />
       </article>
       <ArrowButton direction="prev" onClick={() => step("prev")} />
       <ArrowButton direction="next" onClick={() => step("next")} />

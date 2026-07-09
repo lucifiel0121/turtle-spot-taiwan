@@ -1,4 +1,5 @@
 import { Equal, Volume2 } from "lucide-react";
+import Link from "next/link";
 
 import { LogoMark } from "@/components/logo-mark";
 
@@ -21,7 +22,7 @@ type NavbarProps = {
 export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
   return (
     <div className="flex h-10 w-full items-stretch justify-between xl:h-16">
-      <a
+      <Link
         href="/"
         className="flex items-center gap-1.5 pl-3 text-ink md:gap-2 md:pl-5 xl:gap-3"
         aria-label="Turtle Spot Taiwan home"
@@ -30,7 +31,8 @@ export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
         <span className="whitespace-nowrap font-display text-sm font-bold xl:text-xl">
           Turtle Spot Taiwan
         </span>
-      </a>
+      </Link>
+      {/* 右半深色塊文字取樣為純白（#fff）而非 foam 冷白、分隔線為白 10%，刻意不走 foam token 忠實截圖 */}
       <div className="flex items-stretch divide-x divide-white/10 rounded-bl-[10px] bg-ink font-display text-xs font-semibold tracking-[0.2em] text-white xl:text-sm">
         <button
           type="button"

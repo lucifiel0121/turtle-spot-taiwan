@@ -1,6 +1,6 @@
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Carousel,
@@ -222,12 +222,29 @@ function SlideImage({ slide }: { readonly slide: PhotoCarouselSlide }) {
   );
 }
 
+/** Pad/Mobile 控制列：圖下箭頭與 dots 相貼一列（xl 起箭頭改側邊、僅留 dots）。 */
+function MobileControlBar() {
+  return (
+    <div className="mt-5 flex items-center justify-center gap-2 md:mt-6 xl:mt-8">
+      <CarouselPrevious
+        className={cn(ARROW_CLASS, "static my-0 size-11 xl:hidden")}
+      />
+      <CarouselDots />
+      <CarouselNext
+        className={cn(ARROW_CLASS, "static my-0 size-11 xl:hidden")}
+      />
+    </div>
+  );
+}
+
 /**
  * S3.1 照片輪播：中央大圖 + 左右露出、黑圓箭頭與長條 dots 聯動、loop 循環。
  * S3.2 加入 autoplay（互動暫停、閒置恢復）與 scale/opacity tween。
  */
 export function PhotoCarousel() {
-  const autoplayPlugin = useRef(
+  // useState 惰性初始化（非 useRef）：plugin 實例只建一次，
+  // 且渲染期不讀 ref.current（react-hooks/refs）
+  const [autoplayPlugin] = useState(() =>
     Autoplay({ delay: AUTOPLAY_DELAY_MS, playOnInit: false }),
   );
 
@@ -235,7 +252,7 @@ export function PhotoCarousel() {
     <div className="rounded-b-4xl bg-surface-mist pt-20 pb-24 md:pb-14 xl:pt-26 xl:pb-18">
       <Carousel
         opts={{ loop: true, align: "center" }}
-        plugins={[autoplayPlugin.current]}
+        plugins={[autoplayPlugin]}
       >
         <CarouselAutoplayController />
         <CarouselTween />
@@ -263,15 +280,7 @@ export function PhotoCarousel() {
             )}
           />
         </div>
-        <div className="mt-5 flex items-center justify-center gap-2 md:mt-6 xl:mt-8">
-          <CarouselPrevious
-            className={cn(ARROW_CLASS, "static my-0 size-11 xl:hidden")}
-          />
-          <CarouselDots />
-          <CarouselNext
-            className={cn(ARROW_CLASS, "static my-0 size-11 xl:hidden")}
-          />
-        </div>
+        <MobileControlBar />
       </Carousel>
     </div>
   );

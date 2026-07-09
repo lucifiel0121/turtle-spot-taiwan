@@ -40,6 +40,7 @@ function ProfilePhotoCell({ photo }: { readonly photo: TurtleProfilePhoto }) {
         alt={photo.alt}
         width={818}
         height={524}
+        sizes="(min-width: 768px) 409px, 92vw"
         className="mt-3 aspect-[25/16] w-full object-cover object-center"
       />
     </figure>
