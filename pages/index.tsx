@@ -1,7 +1,10 @@
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
+import type { GetStaticProps, InferGetStaticPropsType } from "next";
 
 import { Button } from "@/components/ui/button";
+import { fetchActivities, useActivities } from "@/lib/activities";
+import type { Activity } from "@/types/activity";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +16,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function Home() {
+type HomeProps = {
+  readonly fallbackActivities: readonly Activity[];
+};
+
+const REVALIDATE_SECONDS = 3600;
+
+export const getStaticProps: GetStaticProps<HomeProps> = async () => {
+  try {
+    const activities = await fetchActivities();
+    return {
+      props: { fallbackActivities: [...activities] },
+      revalidate: REVALIDATE_SECONDS,
+    };
+  } catch (error) {
+    // fetch 失敗不讓 build 掛掉，回傳空陣列由 client 端 SWR 重試
+    console.warn("getStaticProps: fetchActivities failed", error);
+    return {
+      props: { fallbackActivities: [] },
+      revalidate: REVALIDATE_SECONDS,
+    };
+  }
+};
+
+export default function Home({
+  fallbackActivities,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+  const { activities, error } = useActivities(fallbackActivities);
+
   return (
     <div
       className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
@@ -50,6 +80,20 @@ export default function Home() {
           </p>
         </div>
         <Button>shadcn/ui Button 樣式驗證</Button>
+        {/* S1.1 資料流驗證用佔位清單，S1.2 會重排版面 */}
+        <section className="flex flex-col gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <h2 className="font-medium text-black dark:text-zinc-50">
+            Activities（{activities.length} 筆）
+          </h2>
+          {error ? <p>活動資料載入失敗</p> : null}
+          <ul className="flex list-disc flex-col gap-1 pl-5">
+            {activities.map((activity) => (
+              <li key={`${activity.title}-${activity.date}`}>
+                {activity.date} — {activity.title}
+              </li>
+            ))}
+          </ul>
+        </section>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
