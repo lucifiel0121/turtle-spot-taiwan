@@ -1,6 +1,6 @@
 import { MapPinCard } from "@/components/map-pin-card";
 import { Marquee } from "@/components/marquee";
-import { DIVE_MARQUEE_WORDS, DIVE_SITE_CARDS } from "@/content/dive-sites";
+import { DIVE_MARQUEE_TEXT, DIVE_SITE_CARDS } from "@/content/dive-sites";
 
 /**
  * S2.6 Favorite Dive Site 量測（Figma Desktop 1440 整頁截圖，1407px 原圖
@@ -18,26 +18,16 @@ import { DIVE_MARQUEE_WORDS, DIVE_SITE_CARDS } from "@/content/dive-sites";
  *   跑馬燈字級縮圖實測 md ≈0.58×desktop、base ≈0.42×desktop
  *   （blur ±10%，取 112/81px）
  */
-const MARQUEE_DURATION_SECONDS = 15;
-
 /** Favorite Dive Site：黑底 + 灰字跑馬燈置中，兩張 map-pin 卡錯落疊於其上。 */
 export function DiveSites() {
   return (
     <div className="relative overflow-hidden rounded-b-[24px] bg-ink">
       <div className="absolute inset-x-0 top-[48%] -translate-y-1/2">
         <Marquee
-          durationSeconds={MARQUEE_DURATION_SECONDS}
+          words={[DIVE_MARQUEE_TEXT]}
+          repeat={2}
           className="w-full font-display text-[81px] font-semibold leading-none text-ink-soft md:text-[112px] xl:text-[193px]"
-        >
-          {DIVE_MARQUEE_WORDS.map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              className="whitespace-nowrap pr-8 md:pr-11 xl:pr-20"
-            >
-              {word}
-            </span>
-          ))}
-        </Marquee>
+        />
       </div>
       <div className="relative flex flex-col items-center gap-14 py-20 md:block md:h-[756px] md:py-0 xl:h-[838px]">
         <MapPinCard

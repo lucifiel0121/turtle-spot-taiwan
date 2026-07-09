@@ -29,6 +29,14 @@ import { cn } from "@/lib/utils";
 /** 手勢判定：水平位移達此門檻才視為換頁滑動。 */
 export const SWIPE_THRESHOLD_PX = 50;
 
+/**
+ * story 卡尺寸／底色／頂部圓角（三檔 RWD 量測值見檔頭註解）。
+ * viewer 本體與 witness-story 三態佔位卡（StoryStatusCard）共用，
+ * 確保載入／錯誤／空資料時卡片尺寸與有資料時一致。
+ */
+export const STORY_CARD_CLASS =
+  "h-[490px] w-[306px] rounded-t-3xl bg-ink md:h-[676px] md:w-[507px] xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]";
+
 export type StoryDirection = "prev" | "next";
 
 /** 循環換頁 index（首末頁 loop 決策依據見檔頭量測註解）。 */
@@ -242,7 +250,10 @@ export function StoryViewer<T>({
         role="region"
         aria-label={label}
         {...swipeHandlers}
-        className="flex h-[490px] w-[306px] touch-pan-y select-none flex-col overflow-hidden rounded-t-3xl bg-ink md:h-[676px] md:w-[507px] xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
+        className={cn(
+          STORY_CARD_CLASS,
+          "flex touch-pan-y select-none flex-col overflow-hidden",
+        )}
       >
         <ProgressDots count={items.length} current={index} onSelect={jumpTo} />
         {header}

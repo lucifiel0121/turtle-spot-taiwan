@@ -1,15 +1,15 @@
-import { Scan } from "lucide-react";
-
+import { LogoMark } from "@/components/logo-mark";
 import { Marquee } from "@/components/marquee";
-import { StoryViewer } from "@/components/story-viewer";
+import { STORY_CARD_CLASS, StoryViewer } from "@/components/story-viewer";
 import {
   WITNESS_ACTION_LABEL,
   WITNESS_HEADER_LABEL,
-  WITNESS_MARQUEE_WORDS,
+  WITNESS_MARQUEE_TEXT,
 } from "@/content/witness-story";
 import { useActivities } from "@/lib/activities";
 import { formatActivityDate } from "@/lib/format-date";
 import { isSafeHttpUrl } from "@/lib/safe-url";
+import { cn } from "@/lib/utils";
 import type { Activity } from "@/types/activity";
 
 /**
@@ -31,18 +31,12 @@ import type { Activity } from "@/types/activity";
  * S3.4 內容改串 API activities（Figma spec：由上到下 date → title →
  * description → post_link；後端為 null 的欄位整節點不渲染）。
  */
-const MARQUEE_DURATION_SECONDS = 15;
-
 /** 卡片頭像列：白圓 + 四角取景框 mark（同 navbar logo）+ 灰字。 */
 function StoryHeader() {
   return (
     <div className="mt-3 flex items-center gap-2.5 px-4 md:mt-4 md:px-5 xl:mt-5 xl:gap-3">
       <span className="flex size-7 items-center justify-center rounded-full bg-surface-card text-ink md:size-8 xl:size-10">
-        <Scan
-          className="size-4 xl:size-5"
-          strokeWidth={2.5}
-          aria-hidden="true"
-        />
+        <LogoMark className="size-4 xl:size-5" />
       </span>
       <span className="text-sm text-ink-soft xl:text-base">
         {WITNESS_HEADER_LABEL}
@@ -65,7 +59,7 @@ function StoryContent({ activity }: { readonly activity: Activity }) {
       </p>
       <p className={chipClass}>{activity.title}</p>
       {activity.description !== null ? (
-        <p className={`${chipClass} line-clamp-4 md:line-clamp-5`}>
+        <p className={cn(chipClass, "line-clamp-4 md:line-clamp-5")}>
           {activity.description}
         </p>
       ) : null}
@@ -102,7 +96,10 @@ function StoryStatusCard({ message }: { readonly message: string }) {
   return (
     <div
       role="status"
-      className="flex h-[490px] w-[306px] items-center justify-center rounded-t-3xl bg-ink px-8 text-center text-sm text-foam md:h-[676px] md:w-[507px] md:text-base xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
+      className={cn(
+        STORY_CARD_CLASS,
+        "flex items-center justify-center px-8 text-center text-sm text-foam md:text-base",
+      )}
     >
       {message}
     </div>
@@ -143,18 +140,10 @@ export function WitnessStory({ fallbackActivities }: WitnessStoryProps) {
     <div className="relative overflow-hidden">
       <div className="absolute inset-x-0 top-[285px] -translate-y-1/2 md:top-[418px] xl:top-[421px]">
         <Marquee
-          durationSeconds={MARQUEE_DURATION_SECONDS}
+          words={[WITNESS_MARQUEE_TEXT]}
+          repeat={2}
           className="w-full font-display text-[81px] font-semibold leading-none text-foam md:text-[112px] xl:text-[193px]"
-        >
-          {WITNESS_MARQUEE_WORDS.map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              className="whitespace-nowrap pr-8 md:pr-11 xl:pr-20"
-            >
-              {word}
-            </span>
-          ))}
-        </Marquee>
+        />
       </div>
       <div className="relative flex justify-center pt-10 md:pt-20 xl:pt-[81px]">
         {statusMessage === null ? (

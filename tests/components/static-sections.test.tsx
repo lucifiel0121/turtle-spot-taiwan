@@ -14,7 +14,7 @@ import { TURTLE_PROFILE } from "@/content/turtle-profile";
 
 describe("Marquee", () => {
   it("內容渲染兩份且第二份 aria-hidden（螢幕閱讀器只讀一次）", () => {
-    const { container } = render(<Marquee>跑馬燈內容</Marquee>);
+    const { container } = render(<Marquee words={["跑馬燈內容"]} />);
     expect(screen.getAllByText("跑馬燈內容")).toHaveLength(2);
     const copies = container.querySelectorAll(".marquee-track > div");
     expect(copies[1]).toHaveAttribute("aria-hidden", "true");
@@ -22,9 +22,7 @@ describe("Marquee", () => {
 
   it("durationSeconds 與 direction 反映到 track style", () => {
     const { container } = render(
-      <Marquee durationSeconds={15} direction="right">
-        內容
-      </Marquee>,
+      <Marquee words={["內容"]} durationSeconds={15} direction="right" />,
     );
     const track = container.querySelector<HTMLElement>(".marquee-track");
     expect(track?.style.getPropertyValue("--marquee-duration")).toBe("15s");
@@ -32,9 +30,24 @@ describe("Marquee", () => {
   });
 
   it("預設向左（animationDirection normal）", () => {
-    const { container } = render(<Marquee>內容</Marquee>);
+    const { container } = render(<Marquee words={["內容"]} />);
     const track = container.querySelector<HTMLElement>(".marquee-track");
     expect(track?.style.animationDirection).toBe("normal");
+  });
+
+  it("repeat 重複 words 湊寬：每份內容 words × repeat 個 span", () => {
+    render(<Marquee words={["Witness story"]} repeat={2} />);
+    // 兩份 copy × repeat 2 = 4
+    expect(screen.getAllByText("Witness story")).toHaveLength(4);
+  });
+
+  it("每個詞 span 內建 whitespace-nowrap 與尾端間距", () => {
+    render(<Marquee words={["Information"]} repeat={3} />);
+    const spans = screen.getAllByText("Information");
+    expect(spans).toHaveLength(6);
+    for (const span of spans) {
+      expect(span).toHaveClass("whitespace-nowrap", "pr-8");
+    }
   });
 });
 

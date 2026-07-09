@@ -22,9 +22,7 @@ import { Marquee } from "@/components/marquee";
  *   md ≈0.58×desktop、base ≈0.42×desktop（cap 高換算，blur ±10%，
  *   取 107/78px），詞間隔同比縮小
  */
-const HERO_MARQUEE_WORDS = ["Information", "Information", "Information"] as const;
-
-const MARQUEE_DURATION_SECONDS = 15;
+const HERO_MARQUEE_WORD = "Information";
 
 /** Hero Information：跑馬燈大字置底，圓形海龜照置中疊於其上。 */
 export function HeroInformation() {
@@ -32,18 +30,10 @@ export function HeroInformation() {
     <div className="relative flex flex-col items-center pb-10 pt-20 md:pb-20 xl:py-20">
       <div className="absolute inset-0 flex items-center">
         <Marquee
-          durationSeconds={MARQUEE_DURATION_SECONDS}
+          words={[HERO_MARQUEE_WORD]}
+          repeat={3}
           className="w-full translate-y-[0.07em] font-display text-[78px] font-semibold leading-none text-foam md:text-[107px] xl:text-[185px]"
-        >
-          {HERO_MARQUEE_WORDS.map((word, index) => (
-            <span
-              key={`${word}-${index}`}
-              className="whitespace-nowrap pr-8 md:pr-11 xl:pr-20"
-            >
-              {word}
-            </span>
-          ))}
-        </Marquee>
+        />
       </div>
       <Image
         src="/images/hero-turtle.jpeg"

@@ -1,4 +1,6 @@
-import { Equal, Scan, Volume2 } from "lucide-react";
+import { Equal, Volume2 } from "lucide-react";
+
+import { LogoMark } from "@/components/logo-mark";
 
 type NavbarProps = {
   /** 切換 S2.2 全螢幕選單開關。 */
@@ -24,11 +26,7 @@ export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
         className="flex items-center gap-1.5 pl-3 text-ink md:gap-2 md:pl-5 xl:gap-3"
         aria-label="Turtle Spot Taiwan home"
       >
-        <Scan
-          className="size-4 xl:size-6"
-          strokeWidth={2.5}
-          aria-hidden="true"
-        />
+        <LogoMark className="size-4 xl:size-6" />
         <span className="whitespace-nowrap font-display text-sm font-bold xl:text-xl">
           Turtle Spot Taiwan
         </span>

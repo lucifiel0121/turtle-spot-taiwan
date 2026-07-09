@@ -20,8 +20,5 @@ export const DIVE_SITE_CARDS = {
   secondary: { label: "最愛潛點", name: "美人洞", variant: "foam" },
 } as const satisfies Record<string, DiveSite>;
 
-/** 跑馬燈大字：渲染兩份達成內容寬 >= 容器寬（Marquee 呼叫端約定）。 */
-export const DIVE_MARQUEE_WORDS = [
-  "Favorite Dive Site",
-  "Favorite Dive Site",
-] as const;
+/** 跑馬燈大字（重複次數由呼叫端以 Marquee repeat prop 控制）。 */
+export const DIVE_MARQUEE_TEXT = "Favorite Dive Site";
