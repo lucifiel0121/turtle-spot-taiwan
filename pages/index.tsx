@@ -1,5 +1,7 @@
 import type { GetStaticProps, InferGetStaticPropsType } from "next";
+import { useCallback, useState } from "react";
 
+import { FullscreenMenu } from "@/components/fullscreen-menu";
 import { Section, SectionContainer } from "@/components/layout/section";
 import { Navbar } from "@/components/navbar";
 import { fetchActivities, useActivities } from "@/lib/activities";
@@ -58,13 +60,24 @@ export default function Home({
   fallbackActivities,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { activities, error } = useActivities(fallbackActivities);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const toggleMenu = useCallback(() => setMenuOpen((open) => !open), []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Section as="header" id="navbar" background="brand-soft" padding="none">
+      {/* header 疊在全螢幕選單（z-40）之上，選單開啟時 menu 鈕仍可點擊關閉 */}
+      <Section
+        as="header"
+        id="navbar"
+        background="brand-soft"
+        padding="none"
+        className="relative z-50"
+      >
         {/* Navbar 為滿版 bar（右側深色塊貼齊視窗右緣），不走 SectionContainer */}
-        <Navbar />
+        <Navbar onMenuClick={toggleMenu} menuOpen={menuOpen} />
       </Section>
+      <FullscreenMenu open={menuOpen} onClose={closeMenu} />
       <Section id="hero-information" background="brand-soft" padding="spacious">
         <SectionPlaceholder label="Hero Information" />
       </Section>

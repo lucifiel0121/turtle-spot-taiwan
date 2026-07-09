@@ -1,8 +1,10 @@
 import { Equal, Scan, Volume2 } from "lucide-react";
 
 type NavbarProps = {
-  /** S2.2 全螢幕選單接上前先 no-op。 */
+  /** 切換 S2.2 全螢幕選單開關。 */
   readonly onMenuClick?: () => void;
+  /** 全螢幕選單目前是否開啟（供 aria-expanded）。 */
+  readonly menuOpen?: boolean;
 };
 
 /**
@@ -12,7 +14,7 @@ type NavbarProps = {
  * - 高度 RWD：Desktop(xl) 64px / Pad・Mobile 40px
  * language / sounds 鈕行為設計未定義，先渲染不接行為。
  */
-export function Navbar({ onMenuClick }: NavbarProps) {
+export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
   return (
     <div className="flex h-10 w-full items-stretch justify-between xl:h-16">
       <a
@@ -49,7 +51,8 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           type="button"
           onClick={onMenuClick}
           className="flex items-center gap-1.5 px-3 md:gap-2 md:px-4 xl:gap-2.5 xl:px-6"
-          aria-label="Open menu"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
         >
           <Equal className="size-4 xl:size-5" aria-hidden="true" />
           <span>MENU</span>
