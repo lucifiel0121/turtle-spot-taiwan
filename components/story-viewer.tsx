@@ -195,6 +195,9 @@ export function StoryViewer<T>({
   const currentItem = items[view.index];
   if (currentItem === undefined) return null;
 
+  // renderAction 回傳 null（如 post_link 為 null）時連容器一併不渲染，不留空殼 DOM
+  const action = renderAction?.(currentItem, view.index) ?? null;
+
   return (
     <div className={cn("relative", className)}>
       <article
@@ -222,9 +225,9 @@ export function StoryViewer<T>({
         >
           {renderItem(currentItem, view.index)}
         </div>
-        {renderAction ? (
+        {action !== null ? (
           <div className="flex justify-center pb-8 md:pb-12 xl:pb-20">
-            {renderAction(currentItem, view.index)}
+            {action}
           </div>
         ) : null}
       </article>
