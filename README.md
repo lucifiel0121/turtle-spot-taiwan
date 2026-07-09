@@ -2,16 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+本專案使用 pnpm 管理套件。
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install      # 安裝依賴
+pnpm dev          # 開發模式（http://localhost:3000）
+pnpm build        # production build（SSG + ISR）
+pnpm start        # 啟動 production server
+pnpm test         # 執行 Vitest 測試
+pnpm test:coverage # 測試 + 覆蓋率報告
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
