@@ -5,6 +5,7 @@ import { FullscreenMenu } from "@/components/fullscreen-menu";
 import { Section, SectionContainer } from "@/components/layout/section";
 import { Navbar } from "@/components/navbar";
 import { HeroInformation } from "@/components/sections/hero";
+import { TurtleProfile } from "@/components/sections/turtle-profile";
 import { fetchActivities, useActivities } from "@/lib/activities";
 import type { Activity } from "@/types/activity";
 
@@ -82,6 +83,10 @@ export default function Home({
       <Section id="hero-information" background="brand-soft" padding="none">
         {/* S2.4 Hero：上下留白由 HeroInformation 依截圖量測自控（非 spacious 齊一值） */}
         <HeroInformation />
+      </Section>
+      <Section id="turtle-profile" background="brand-soft" padding="none">
+        {/* S2.5 資料卡屬 hero 青色帶；卡片下緣與 carousel 灰帶齊平（截圖量測無間隙） */}
+        <TurtleProfile />
       </Section>
       <Section id="photo-carousel" background="surface-mist" padding="spacious">
         <SectionPlaceholder label="Photo Carousel" />
