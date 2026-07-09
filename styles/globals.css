@@ -39,10 +39,35 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/*
+ * Turtle Spot Taiwan design tokens
+ * 取樣來源：Figma Desktop 1440 整頁截圖（1407x4096 px，2026-07-09 眾數取色）
+ * 詳細對照表見 docs/design-tokens.md
+ */
+@theme {
+  /* 品牌主青色：footer 背景、footer 標題文字 */
+  --color-brand: #00cad7;
+  /* 淺青背景：navbar 左半、hero 區、witness 區、map-pin 卡填色、VIEW POST 邊框 */
+  --color-brand-soft: #aaf5fa;
+  /* 冷白：hero/witness 跑馬燈大字、白色 map-pin 卡 */
+  --color-foam: #f5fcff;
+  /* 淺灰藍：carousel 區塊背景 */
+  --color-surface-mist: #e5eef0;
+  /* 純白：海龜資訊卡片背景 */
+  --color-surface-card: #ffffff;
+  /* 近黑：navbar 右半、dive-site 區背景、story 手機卡、主要深色文字 */
+  --color-ink: #161616;
+  /* 暗灰：dive-site 區灰色跑馬燈大字 */
+  --color-ink-soft: #50535e;
+  /* Display 字體：英文大字跑馬燈與標題（Poppins 為原設計最接近替代） */
+  --font-display: var(--font-poppins), var(--font-noto-sans-tc), sans-serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-poppins), var(--font-noto-sans-tc), ui-sans-serif,
+    system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -93,7 +118,6 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 .dark {
