@@ -9,11 +9,6 @@ import { cn } from "@/lib/utils";
  * - Desktop 1440 → xl:（1280px 啟用；1440 是 Figma 畫布寬，
  *   內容實為置中 container，故不自訂 --breakpoint-*，沿用預設）
  */
-export const BREAKPOINT_MAP = {
-  mobile: "base (<768px)",
-  pad: "md (>=768px)",
-  desktop: "xl (>=1280px)",
-} as const;
 
 const SECTION_BACKGROUNDS = {
   brand: "bg-brand",
@@ -24,20 +19,11 @@ const SECTION_BACKGROUNDS = {
   ink: "bg-ink",
 } as const;
 
-const SECTION_PADDINGS = {
-  none: "",
-  compact: "py-6 md:py-8 xl:py-10",
-  default: "py-12 md:py-16 xl:py-20",
-  spacious: "py-16 md:py-24 xl:py-32",
-} as const;
-
 export type SectionBackground = keyof typeof SECTION_BACKGROUNDS;
-export type SectionPadding = keyof typeof SECTION_PADDINGS;
 
 type SectionProps = {
   readonly id?: string;
   readonly background: SectionBackground;
-  readonly padding?: SectionPadding;
   readonly as?: ElementType;
   readonly className?: string;
   readonly children: ReactNode;
@@ -46,11 +32,12 @@ type SectionProps = {
 /**
  * 全頁共用的色帶 section wrapper：
  * 背景一律走 @theme 語意化 token，禁止在頁面層寫死色碼。
+ * 不提供 padding 檔位：全頁各 section 內距皆依截圖量測由內容自控，
+ * 齊一 padding 檔位在本設計中無使用場景。
  */
 export function Section({
   id,
   background,
-  padding = "default",
   as: Tag = "section",
   className,
   children,
@@ -58,12 +45,7 @@ export function Section({
   return (
     <Tag
       id={id}
-      className={cn(
-        "w-full",
-        SECTION_BACKGROUNDS[background],
-        SECTION_PADDINGS[padding],
-        className,
-      )}
+      className={cn("w-full", SECTION_BACKGROUNDS[background], className)}
     >
       {children}
     </Tag>

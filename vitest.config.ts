@@ -26,12 +26,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: [["text", { skipFull: false }], ["text-summary"]],
-      // 限定 ts/tsx：目錄下的 .DS_Store 等非程式檔會讓 v8 remap 解析失敗
-      include: [
-        "lib/**/*.{ts,tsx}",
-        "components/**/*.{ts,tsx}",
-        "pages/**/*.{ts,tsx}",
-      ],
+      include: ["lib/**", "components/**", "pages/**"],
       exclude: ["components/ui/**", "pages/_document.tsx"],
       thresholds: { lines: 80 },
     },

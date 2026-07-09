@@ -52,9 +52,9 @@ describe("Marquee", () => {
 });
 
 describe("Section / SectionContainer", () => {
-  it("背景 token 與 padding 檔位對映 class，as 可換標籤", () => {
+  it("背景 token 對映 class，as 可換標籤", () => {
     const { container } = render(
-      <Section as="header" id="navbar" background="brand-soft" padding="none">
+      <Section as="header" id="navbar" background="brand-soft">
         內容
       </Section>,
     );
@@ -63,12 +63,13 @@ describe("Section / SectionContainer", () => {
     expect(header).toHaveClass("bg-brand-soft");
   });
 
-  it("預設 padding=default、標籤為 section", () => {
+  it("預設標籤為 section、不附帶額外內距 class", () => {
     const { container } = render(
       <Section background="ink">內容</Section>,
     );
     const section = container.querySelector("section");
-    expect(section).toHaveClass("bg-ink", "py-12");
+    expect(section).toHaveClass("bg-ink", "w-full");
+    expect(section?.className).not.toMatch(/py-/);
   });
 
   it("SectionContainer 置中收斂內容寬", () => {
