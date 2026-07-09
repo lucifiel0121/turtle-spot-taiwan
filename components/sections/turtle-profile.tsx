@@ -19,8 +19,11 @@ import {
  *   直角滿欄寬，照片下方亦有分隔線
  * - S4.1 Pad/Mobile 設計稿校正（768/375 整頁縮圖）：tab 兩檔皆為滿卡寬
  *   灰 bar（含上圓角，非 Desktop 的 fit-content notch）、高 ≈53px；
- *   Pad 卡片側邊留白 ≈58px（md:px-14）、Mobile ≈16px 維持；
  *   欄位 Pad 兩欄 / Mobile 一欄與縮圖吻合維持
+ * - S4.2 側邊留白復測（同一組 768/375 縮圖，逐 row 子像素取樣校正）：
+ *   Pad 卡片左右留白實測 ≈40px（margin/canvas 寬比 5.1%，非先前估的
+ *   58px）→ md:px-10；Mobile 卡片左右留白實測為 0（card 邊緣與畫布邊緣
+ *   同一像素轉場，無 teal 夾層）→ 全滿版、移除 px-4
  */
 
 function ProfileFieldRow({ field }: { readonly field: TurtleProfileField }) {
@@ -51,7 +54,7 @@ function ProfilePhotoCell({ photo }: { readonly photo: TurtleProfilePhoto }) {
 export function TurtleProfile() {
   const { tab, fields, feature, photos } = TURTLE_PROFILE;
   return (
-    <div className="px-4 md:px-14 xl:px-8">
+    <div className="px-0 md:px-10 xl:px-8">
       <div className="mx-auto flex w-full max-w-[920px] flex-col items-start">
         <div className="flex h-13 w-full items-center gap-3 rounded-t-2xl bg-surface-mist px-6 text-lg font-bold text-ink md:h-14 md:gap-4 md:px-10 md:text-[22px] xl:h-16 xl:w-auto">
           <span>{tab.name}</span>
