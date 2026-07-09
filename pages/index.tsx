@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { FullscreenMenu } from "@/components/fullscreen-menu";
 import { Section, SectionContainer } from "@/components/layout/section";
 import { Navbar } from "@/components/navbar";
+import { DiveSites } from "@/components/sections/dive-sites";
 import { HeroInformation } from "@/components/sections/hero";
 import { TurtleProfile } from "@/components/sections/turtle-profile";
 import { fetchActivities, useActivities } from "@/lib/activities";
@@ -91,8 +92,9 @@ export default function Home({
       <Section id="photo-carousel" background="surface-mist" padding="spacious">
         <SectionPlaceholder label="Photo Carousel" />
       </Section>
-      <Section id="favorite-dive-site" background="ink" padding="spacious">
-        <SectionPlaceholder label="Favorite Dive Site" tone="light" />
+      <Section id="favorite-dive-site" background="brand-soft" padding="none">
+        {/* S2.6 黑底由 DiveSites 自帶（含底部圓角 24），section 背景青色供圓角缺口透出 */}
+        <DiveSites />
       </Section>
       <Section id="witness-story" background="brand-soft" padding="spacious">
         <SectionPlaceholder label="Witness Story" />
