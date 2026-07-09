@@ -1,4 +1,5 @@
 import type { GetStaticProps } from "next";
+import Head from "next/head";
 import { useCallback, useState } from "react";
 
 import { FullscreenMenu } from "@/components/fullscreen-menu";
@@ -49,6 +50,13 @@ export default function Home({ fallbackActivities }: HomeProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <Head>
+        <title>Turtle Spot Taiwan｜海龜目擊回報</title>
+        <meta
+          name="description"
+          content="Turtle Spot Taiwan 海龜點點名：認識台灣海龜、探索熱門潛點，即時追蹤與回報海龜目擊動態。"
+        />
+      </Head>
       {/* header 疊在全螢幕選單（z-40）之上，選單開啟時 menu 鈕仍可點擊關閉 */}
       <Section
         as="header"

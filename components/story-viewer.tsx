@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useCallback,
@@ -37,6 +38,15 @@ export function wrapIndex(index: number, count: number): number {
 }
 
 /**
+ * 收斂 index 至合法範圍（SWR revalidation 使 items 縮減時的防呆）：
+ * 超出上界 clamp 到末筆，不 wrap — 停留在「最接近原位置」的資料上。
+ */
+export function clampIndex(index: number, count: number): number {
+  if (count <= 0) return 0;
+  return Math.min(Math.max(index, 0), count - 1);
+}
+
+/**
  * 手勢意圖判定（純函式）：|dx| >= 門檻且 |dx| > |dy|（水平主導）才回傳方向；
  * 斜向／垂直滑動回傳 null，不與頁面垂直捲動衝突。向左滑 = 下一頁。
  */
@@ -54,14 +64,22 @@ export function resolveSwipeDirection(
 /**
  * Pointer events 手勢導覽：卡片掛 touch-pan-y，垂直捲動仍交還瀏覽器
  * （瀏覽器接手捲動時發 pointercancel，起點被清空、不誤觸換頁）。
+ * - pointerdown 時 setPointerCapture：滑鼠拖出卡片邊界放開仍收得到
+ *   pointerup（jsdom 無此 API，optional call 防呆）
+ * - swipe 成立時一次性抑制後續 click（capture phase）：拖曳起訖都落在
+ *   VIEW POST anchor 上時，換頁與開新分頁不再同時發生
  */
 function useSwipeNavigation(step: (direction: StoryDirection) => void) {
   const start = useRef<{ readonly x: number; readonly y: number } | null>(
     null,
   );
+  const suppressClick = useRef(false);
 
   const onPointerDown = useCallback((event: ReactPointerEvent) => {
+    // 新手勢開始即歸零抑制 flag：swipe 後未跟進 click 時不殘留到下一次真 click
+    suppressClick.current = false;
     start.current = { x: event.clientX, y: event.clientY };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
   }, []);
 
   const onPointerUp = useCallback(
@@ -73,7 +91,9 @@ function useSwipeNavigation(step: (direction: StoryDirection) => void) {
         event.clientX - origin.x,
         event.clientY - origin.y,
       );
-      if (direction) step(direction);
+      if (!direction) return;
+      suppressClick.current = true;
+      step(direction);
     },
     [step],
   );
@@ -82,7 +102,14 @@ function useSwipeNavigation(step: (direction: StoryDirection) => void) {
     start.current = null;
   }, []);
 
-  return { onPointerDown, onPointerUp, onPointerCancel };
+  const onClickCapture = useCallback((event: ReactMouseEvent) => {
+    if (!suppressClick.current) return;
+    suppressClick.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
+  return { onPointerDown, onPointerUp, onPointerCancel, onClickCapture };
 }
 
 type ProgressDotsProps = {
@@ -175,8 +202,13 @@ export function StoryViewer<T>({
   const step = useCallback(
     (direction: StoryDirection) => {
       const offset = direction === "next" ? 1 : -1;
+      // 先 clamp 再位移：SWR revalidation 縮減 items 後，以畫面上實際顯示的
+      // index 為換頁基準，避免 stale index 造成跳頁不連續
       setView((prev) => ({
-        index: wrapIndex(prev.index + offset, items.length),
+        index: wrapIndex(
+          clampIndex(prev.index, items.length) + offset,
+          items.length,
+        ),
         direction,
       }));
     },
@@ -194,11 +226,15 @@ export function StoryViewer<T>({
   );
 
   const swipeHandlers = useSwipeNavigation(step);
-  const currentItem = items[view.index];
+  // 渲染用 index 以 items 當下筆數 clamp（derived，不 setState）：
+  // SWR revalidation 使 items 縮減到少於 state index 時仍渲染合法末筆，
+  // 不會整個 viewer 空白；items 為空陣列時維持既有的不渲染行為
+  const index = clampIndex(view.index, items.length);
+  const currentItem = items[index];
   if (currentItem === undefined) return null;
 
   // renderAction 回傳 null（如 post_link 為 null）時連容器一併不渲染，不留空殼 DOM
-  const action = renderAction?.(currentItem, view.index) ?? null;
+  const action = renderAction?.(currentItem, index) ?? null;
 
   return (
     <div className={cn("relative", className)}>
@@ -208,15 +244,11 @@ export function StoryViewer<T>({
         {...swipeHandlers}
         className="flex h-[490px] w-[306px] touch-pan-y select-none flex-col overflow-hidden rounded-t-3xl bg-ink md:h-[676px] md:w-[507px] xl:h-[680px] xl:w-[558px] xl:rounded-t-[32px]"
       >
-        <ProgressDots
-          count={items.length}
-          current={view.index}
-          onSelect={jumpTo}
-        />
+        <ProgressDots count={items.length} current={index} onSelect={jumpTo} />
         {header}
         {/* key 換頁重掛載以重播進場動畫；transform+opacity only，reduced-motion 關閉 */}
         <div
-          key={view.index}
+          key={index}
           className={cn(
             "flex min-h-0 flex-1 flex-col",
             "animate-in fade-in duration-500 motion-reduce:animate-none",
@@ -225,7 +257,7 @@ export function StoryViewer<T>({
               : "slide-in-from-left-8",
           )}
         >
-          {renderItem(currentItem, view.index)}
+          {renderItem(currentItem, index)}
         </div>
         {action !== null ? (
           <div className="flex justify-center pb-8 md:pb-12 xl:pb-20">

@@ -1,10 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   StoryViewer,
   SWIPE_THRESHOLD_PX,
+  clampIndex,
   resolveSwipeDirection,
   wrapIndex,
 } from "@/components/story-viewer";
@@ -28,6 +29,20 @@ describe("wrapIndex", () => {
   it("count <= 0 一律回 0（防呆）", () => {
     expect(wrapIndex(3, 0)).toBe(0);
     expect(wrapIndex(-1, -2)).toBe(0);
+  });
+});
+
+describe("clampIndex", () => {
+  it("範圍內原樣返回、超出上界收斂到末筆", () => {
+    expect(clampIndex(0, 5)).toBe(0);
+    expect(clampIndex(4, 5)).toBe(4);
+    expect(clampIndex(7, 5)).toBe(4);
+  });
+
+  it("負值收斂到 0；count <= 0 一律回 0（防呆）", () => {
+    expect(clampIndex(-3, 5)).toBe(0);
+    expect(clampIndex(3, 0)).toBe(0);
+    expect(clampIndex(3, -1)).toBe(0);
   });
 });
 
@@ -56,6 +71,17 @@ describe("resolveSwipeDirection", () => {
 });
 
 const ITEMS = ["第一則", "第二則", "第三則"] as const;
+
+const ITEMS_EIGHT = [
+  "第一則",
+  "第二則",
+  "第三則",
+  "第四則",
+  "第五則",
+  "第六則",
+  "第七則",
+  "第八則",
+] as const;
 
 function renderViewer(
   renderAction?: (item: string, index: number) => React.ReactNode,
@@ -166,5 +192,74 @@ describe("StoryViewer", () => {
       <StoryViewer items={[]} renderItem={() => <p>never</p>} />,
     );
     expect(container.firstChild).toBeNull();
+  });
+
+  it("SWR revalidation 縮減 items 時 index clamp 到合法末筆，viewer 不空白", async () => {
+    const user = userEvent.setup();
+    const many = ITEMS_EIGHT;
+    const { rerender } = render(
+      <StoryViewer items={many} renderItem={(item) => <p>{item}</p>} />,
+    );
+    await user.click(screen.getByRole("button", { name: "跳至第 8 則" }));
+    expect(screen.getByText("第八則")).toBeInTheDocument();
+
+    // 模擬 SWR revalidation：items 縮成 5 筆，state index 7 已越界
+    rerender(
+      <StoryViewer
+        items={many.slice(0, 5)}
+        renderItem={(item) => <p>{item}</p>}
+      />,
+    );
+    expect(screen.getByText("第五則")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /^跳至第/ })).toHaveLength(5);
+    expect(
+      screen.getByRole("button", { name: "跳至第 5 則" }),
+    ).toHaveAttribute("aria-current", "true");
+
+    // 換頁以 clamp 後的 index 為基準：末筆 next loop 回首筆
+    await user.click(screen.getByRole("button", { name: "下一則" }));
+    expect(screen.getByText("第一則")).toBeInTheDocument();
+  });
+
+  it("pointerdown 時對卡片要求 pointer capture（拖出邊界仍收得到 pointerup）", () => {
+    renderViewer();
+    const region = screen.getByRole("region", { name: "測試動態" });
+    const setPointerCapture = vi.fn();
+    // jsdom 未實作 Pointer Capture API，mock 驗證呼叫參數
+    Object.assign(region, { setPointerCapture });
+
+    fireEvent.pointerDown(region, { clientX: 200, clientY: 100, pointerId: 7 });
+    expect(setPointerCapture).toHaveBeenCalledWith(7);
+
+    // capture 生效下 pointerup 回到卡片：拖出邊界的座標仍完成換頁
+    fireEvent.pointerUp(region, { clientX: -500, clientY: 100, pointerId: 7 });
+    expect(screen.getByText("第二則")).toBeInTheDocument();
+  });
+
+  it("swipe 起訖都在 anchor 上時一次性抑制 click，單純 click 正常", () => {
+    const onAnchorClick = vi.fn((event: React.MouseEvent) =>
+      event.preventDefault(),
+    );
+    renderViewer((item) => (
+      <a href="https://example.com" onClick={onAnchorClick}>
+        {item} 連結
+      </a>
+    ));
+    const anchor = screen.getByRole("link", { name: "第一則 連結" });
+
+    fireEvent.pointerDown(anchor, { clientX: 200, clientY: 100 });
+    fireEvent.pointerUp(anchor, { clientX: 120, clientY: 100 });
+    expect(screen.getByText("第二則")).toBeInTheDocument();
+
+    // swipe 成立後緊跟的 click 於 capture phase 被 preventDefault（開新分頁
+    // 的預設行為取消、dispatchEvent 回傳 false）+ stopPropagation（anchor
+    // 自身 handler 收不到）
+    const nextAnchor = screen.getByRole("link", { name: "第二則 連結" });
+    expect(fireEvent.click(nextAnchor)).toBe(false);
+    expect(onAnchorClick).not.toHaveBeenCalled();
+
+    // 一次性抑制：後續單純 click 正常送達 anchor handler
+    fireEvent.click(nextAnchor);
+    expect(onAnchorClick).toHaveBeenCalledTimes(1);
   });
 });

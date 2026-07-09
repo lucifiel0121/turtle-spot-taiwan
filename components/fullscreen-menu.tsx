@@ -2,6 +2,13 @@ import { useEffect, useRef } from "react";
 import type { ReactNode, RefObject } from "react";
 
 import { SectionContainer } from "@/components/layout/section";
+import {
+  MENU_CONTACT_EMAIL,
+  MENU_CONTACT_TITLE,
+  MENU_FOLLOW_TITLE,
+  MENU_NAV_ITEMS,
+  MENU_SOCIAL_LINKS,
+} from "@/content/menu";
 
 type FullscreenMenuProps = {
   readonly open: boolean;
@@ -10,18 +17,6 @@ type FullscreenMenuProps = {
 
 /** 單頁筆試題目：設計稿未定義各連結目的地，href 先以 "#" 佔位。 */
 const PLACEHOLDER_HREF = "#";
-
-const NAV_ITEMS = [
-  { zh: "海龜地圖", en: "Map" },
-  { zh: "文章分享", en: "Article" },
-  { zh: "關於我們", en: "About" },
-  { zh: "教育資源", en: "Resources" },
-  { zh: "目擊回報", en: "Report Sightings" },
-] as const;
-
-const CONTACT_EMAIL = "info@gmail.com";
-
-const SOCIAL_LINKS = ["facebook", "instagram"] as const;
 
 /** 開啟時鎖住 body scroll，關閉／卸載時還原原值。 */
 function useBodyScrollLock(locked: boolean) {
@@ -45,6 +40,42 @@ function useEscapeToClose(active: boolean, onClose: () => void) {
     window.addEventListener("keydown", handleKeydown);
     return () => window.removeEventListener("keydown", handleKeydown);
   }, [active, onClose]);
+}
+
+/** focus trap 循環對象：覆蓋層內可聚焦元素（本選單僅含連結與按鈕）。 */
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Focus trap（aria-modal 對應行為）：Tab / Shift+Tab 在覆蓋層內循環，
+ * 不跑出蓋在底下的頁面內容。自寫小 hook、不引入依賴。
+ */
+function useFocusTrap(
+  active: boolean,
+  containerRef: RefObject<HTMLDivElement | null>,
+) {
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!active || !container) return;
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const focusables =
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const current = document.activeElement;
+      if (!event.shiftKey && current === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && (current === first || current === container)) {
+        event.preventDefault();
+        last.focus();
+      }
+    };
+    container.addEventListener("keydown", handleKeydown);
+    return () => container.removeEventListener("keydown", handleKeydown);
+  }, [active, containerRef]);
 }
 
 /** 開啟時 focus 移入覆蓋層，關閉後 focus 回原觸發元素（menu 鈕）。 */
@@ -89,6 +120,7 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
   useBodyScrollLock(open);
   useEscapeToClose(open, onClose);
   useFocusOnOpen(open, containerRef);
+  useFocusTrap(open, containerRef);
 
   if (!open) return null;
 
@@ -104,7 +136,7 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
       <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 md:py-14 xl:py-16">
         <nav aria-label="主要導覽">
           <ul className="flex flex-col gap-8 md:gap-10 xl:flex-row xl:items-baseline xl:justify-between xl:gap-6">
-            {NAV_ITEMS.map((item) => (
+            {MENU_NAV_ITEMS.map((item) => (
               <li key={item.en}>
                 <a href={PLACEHOLDER_HREF} className="block">
                   <span className="block text-sm text-white/60">{item.zh}</span>
@@ -117,11 +149,11 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
           </ul>
         </nav>
         <div className="flex flex-col gap-8 md:flex-row md:gap-24">
-          <MenuInfoBlock title="聯絡我們">
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+          <MenuInfoBlock title={MENU_CONTACT_TITLE}>
+            <a href={`mailto:${MENU_CONTACT_EMAIL}`}>{MENU_CONTACT_EMAIL}</a>
           </MenuInfoBlock>
-          <MenuInfoBlock title="追蹤我們">
-            {SOCIAL_LINKS.map((name) => (
+          <MenuInfoBlock title={MENU_FOLLOW_TITLE}>
+            {MENU_SOCIAL_LINKS.map((name) => (
               <a key={name} href={PLACEHOLDER_HREF}>
                 {name}
               </a>

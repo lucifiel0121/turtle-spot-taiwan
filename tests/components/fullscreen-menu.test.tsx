@@ -48,6 +48,41 @@ describe("FullscreenMenu", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("focus trap：最後一個 focusable 按 Tab 循環回第一個、Shift+Tab 反向", () => {
+    render(<FullscreenMenu open onClose={() => {}} />);
+    const links = screen.getAllByRole("link");
+    const first = links[0];
+    const last = links[links.length - 1];
+
+    last.focus();
+    fireEvent.keyDown(last, { key: "Tab" });
+    expect(first).toHaveFocus();
+
+    fireEvent.keyDown(first, { key: "Tab", shiftKey: true });
+    expect(last).toHaveFocus();
+  });
+
+  it("focus trap：焦點在覆蓋層容器本身時 Shift+Tab 移到最後一個 focusable", () => {
+    render(<FullscreenMenu open onClose={() => {}} />);
+    const dialog = screen.getByRole("dialog", { name: "全站導覽選單" });
+    const links = screen.getAllByRole("link");
+    expect(dialog).toHaveFocus();
+
+    fireEvent.keyDown(dialog, { key: "Tab", shiftKey: true });
+    expect(links[links.length - 1]).toHaveFocus();
+  });
+
+  it("focus trap：中間元素按 Tab 不攔截（交還瀏覽器預設行為）", () => {
+    render(<FullscreenMenu open onClose={() => {}} />);
+    const links = screen.getAllByRole("link");
+    const middle = links[1];
+    middle.focus();
+
+    fireEvent.keyDown(middle, { key: "Tab" });
+    // jsdom 不執行預設 Tab 移動；未被攔截時焦點應保持原位
+    expect(middle).toHaveFocus();
+  });
+
   it("按 Esc 呼叫 onClose", () => {
     const onClose = vi.fn();
     render(<FullscreenMenu open onClose={onClose} />);
