@@ -1,7 +1,8 @@
-import { Equal, Volume2 } from "lucide-react";
+import { Equal, Volume2, X } from "lucide-react";
 import Link from "next/link";
 
 import { LogoMark } from "@/components/logo-mark";
+import { cn } from "@/lib/utils";
 
 type NavbarProps = {
   /** 切換 S2.2 全螢幕選單開關。 */
@@ -24,7 +25,11 @@ export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
     <div className="flex h-10 w-full items-stretch justify-between xl:h-16">
       <Link
         href="/"
-        className="flex items-center gap-1.5 pl-3 text-ink md:gap-2 md:pl-5 xl:gap-3"
+        className={cn(
+          "flex items-center gap-1.5 pl-3 md:gap-2 md:pl-5 xl:gap-3",
+          // 選單開啟時整條 navbar 轉深底（Figma menu-open：logo 轉白）
+          menuOpen ? "text-white" : "text-ink",
+        )}
         aria-label="Turtle Spot Taiwan home"
       >
         <LogoMark className="size-4 xl:size-6" />
@@ -55,7 +60,11 @@ export function Navbar({ onMenuClick, menuOpen = false }: NavbarProps) {
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
-          <Equal className="size-4 xl:size-5" aria-hidden="true" />
+          {menuOpen ? (
+            <X className="size-4 xl:size-5" aria-hidden="true" />
+          ) : (
+            <Equal className="size-4 xl:size-5" aria-hidden="true" />
+          )}
           <span className="hidden xl:inline">MENU</span>
         </button>
       </div>

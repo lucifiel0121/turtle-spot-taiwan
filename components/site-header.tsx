@@ -19,7 +19,7 @@ export function SiteHeader() {
       <Section
         as="header"
         id="navbar"
-        background="brand-soft"
+        background={menuOpen ? "ink" : "brand-soft"}
         className="relative z-50"
       >
         {/* Navbar 為滿版 bar（右側深色塊貼齊視窗右緣），不走 SectionContainer */}

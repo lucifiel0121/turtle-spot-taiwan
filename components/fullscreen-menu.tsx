@@ -9,6 +9,7 @@ import {
   MENU_NAV_ITEMS,
   MENU_SOCIAL_LINKS,
 } from "@/content/menu";
+import { cn } from "@/lib/utils";
 
 type FullscreenMenuProps = {
   readonly open: boolean;
@@ -102,8 +103,12 @@ type MenuInfoBlockProps = {
 function MenuInfoBlock({ title, children }: MenuInfoBlockProps) {
   return (
     <div className="flex flex-col items-end gap-2 text-right xl:items-start xl:text-left">
-      <p className="text-sm text-white/60">{title}</p>
-      <div className="flex justify-end gap-6 font-display text-base font-medium xl:justify-start">
+      {/* Figma menu：標題後接一段短分隔線（「聯絡我們 —」「追蹤我們 —」）。 */}
+      <div className="flex items-center gap-3">
+        <p className="text-sm text-white/60">{title}</p>
+        <span className="h-px w-8 bg-white/30" aria-hidden="true" />
+      </div>
+      <div className="flex items-center justify-end gap-3 font-display text-base font-medium xl:justify-start">
         {children}
       </div>
     </div>
@@ -135,14 +140,20 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
     >
       {/* 深色內容面板：底部大圓角，露出下緣青色帶（Figma menu 設計，Image #2）。 */}
       <div className="flex min-h-[80%] flex-col rounded-b-[32px] bg-ink pt-10 md:rounded-b-[40px] xl:rounded-b-[48px] xl:pt-16">
-        <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 md:py-14 xl:py-16">
+        <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 md:py-14 xl:justify-end xl:gap-16 xl:py-16">
         <nav aria-label="主要導覽">
           <ul className="flex flex-col items-end gap-8 text-right md:gap-10 xl:flex-row xl:items-baseline xl:justify-between xl:gap-6 xl:text-left">
-            {MENU_NAV_ITEMS.map((item) => (
+            {MENU_NAV_ITEMS.map((item, index) => (
               <li key={item.en}>
-                <a href={PLACEHOLDER_HREF} className="block">
+                <a href={PLACEHOLDER_HREF} className="group block">
                   <span className="block text-sm text-white/60">{item.zh}</span>
-                  <span className="mt-1 block font-display text-4xl font-semibold md:text-5xl xl:text-4xl">
+                  <span
+                    className={cn(
+                      "mt-1 block font-display text-4xl font-semibold transition-colors group-hover:text-brand md:text-5xl xl:text-4xl",
+                      // Figma menu 稿首項（Map）為品牌青色高亮
+                      index === 0 && "text-brand",
+                    )}
+                  >
                     {item.en}
                   </span>
                 </a>
@@ -155,10 +166,15 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
             <a href={`mailto:${MENU_CONTACT_EMAIL}`}>{MENU_CONTACT_EMAIL}</a>
           </MenuInfoBlock>
           <MenuInfoBlock title={MENU_FOLLOW_TITLE}>
-            {MENU_SOCIAL_LINKS.map((name) => (
-              <a key={name} href={PLACEHOLDER_HREF}>
-                {name}
-              </a>
+            {MENU_SOCIAL_LINKS.map((name, index) => (
+              <span key={name} className="contents">
+                {index > 0 ? (
+                  <span aria-hidden="true" className="text-white/40">
+                    /
+                  </span>
+                ) : null}
+                <a href={PLACEHOLDER_HREF}>{name}</a>
+              </span>
             ))}
           </MenuInfoBlock>
         </div>
