@@ -91,7 +91,7 @@ function ContactColumn() {
 export function Footer() {
   return (
     <div className="relative flex flex-col px-7 py-20 xl:h-[380px] xl:flex-row xl:justify-between xl:pb-0 xl:pl-[83px] xl:pr-[182px] xl:pt-[60px]">
-      <p className="font-display text-[32px] font-semibold leading-none text-ink xl:text-[42px]">
+      <p className="font-display text-[32px] font-black leading-none tracking-[0.02em] text-ink xl:text-[42px]">
         {FOOTER.title}
       </p>
       <p className="mt-6 text-base font-medium leading-none text-ink xl:absolute xl:bottom-[141px] xl:left-[83px] xl:mt-0">

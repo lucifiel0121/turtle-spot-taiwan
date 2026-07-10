@@ -4,9 +4,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import App from "@/pages/_app";
 
-// next/font 需要 Next.js compiler transform，Vitest 環境以替身注入 className
+// next/font 需要 Next.js compiler transform，Vitest 環境以替身注入 className。
+// Satoshi 改由全域 @font-face 載入（見 styles/globals.css），不再走 next/font。
 vi.mock("next/font/google", () => ({
-  Poppins: () => ({ variable: "--font-poppins", className: "font-poppins" }),
   Noto_Sans_TC: () => ({
     variable: "--font-noto-sans-tc",
     className: "font-noto-sans-tc",
@@ -27,10 +27,6 @@ describe("App", () => {
     const { container } = render(<App {...props} />);
 
     expect(screen.getByText("hello app")).toBeInTheDocument();
-    expect(container.firstChild).toHaveClass(
-      "--font-poppins",
-      "--font-noto-sans-tc",
-      "font-sans",
-    );
+    expect(container.firstChild).toHaveClass("--font-noto-sans-tc", "font-sans");
   });
 });

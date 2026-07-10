@@ -2,6 +2,37 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Satoshi（設計稿指定字體）自 Fontshare 自托管；全域 @font-face 確保任何
+   元素引用 "Satoshi" 都能觸發載入，不依賴 next/font 變數的繼承範圍。 */
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -44,15 +75,17 @@
   --color-ink: #161616;
   /* 暗灰：dive-site 區灰色跑馬燈大字 */
   --color-ink-soft: #50535e;
-  /* Display 字體：英文大字跑馬燈與標題（Poppins 為原設計最接近替代） */
-  --font-display: var(--font-poppins), var(--font-noto-sans-tc), sans-serif;
+  /* Display 字體：英文大字跑馬燈與標題。Satoshi 由全域 @font-face 載入；
+     CJK fallback 用 var 但帶字面 fallback，確保 :root 端（--font-noto-sans-tc
+     未定義處）整條 font-family 仍有效，不致 invalid 而失效。 */
+  --font-display: "Satoshi", var(--font-noto-sans-tc, "Noto Sans TC"), sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-poppins), var(--font-noto-sans-tc), ui-sans-serif,
-    system-ui, sans-serif;
+  --font-sans: "Satoshi", var(--font-noto-sans-tc, "Noto Sans TC"),
+    ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sans);
   --color-ring: var(--ring);
   --color-input: var(--input);

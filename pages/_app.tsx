@@ -1,14 +1,8 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { Noto_Sans_TC, Poppins } from "next/font/google";
+import { Noto_Sans_TC } from "next/font/google";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
-  display: "swap",
-});
-
+// Satoshi（設計稿指定字體）以全域 @font-face 自托管載入（見 styles/globals.css）。
 const notoSansTC = Noto_Sans_TC({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -18,7 +12,7 @@ const notoSansTC = Noto_Sans_TC({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div className={`${poppins.variable} ${notoSansTC.variable} font-sans`}>
+    <div className={`${notoSansTC.variable} font-sans`}>
       <Component {...pageProps} />
     </div>
   );
