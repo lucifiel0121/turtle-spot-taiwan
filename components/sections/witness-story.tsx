@@ -59,8 +59,12 @@ function StoryContent({ activity }: { readonly activity: Activity }) {
       </p>
       <p className={chipClass}>{activity.title}</p>
       {activity.description !== null ? (
-        <p className={cn(chipClass, "line-clamp-4 md:line-clamp-5")}>
-          {activity.description}
+        <p className={chipClass}>
+          {/* clamp 掛在無 padding 的內層：-webkit-line-clamp 直接貼齊 N 行裁切，
+              避免最後一行的下一行殘影 bleed 進 chip 的 py 內邊距（Image #3 缺陷）。 */}
+          <span className="line-clamp-4 leading-snug md:line-clamp-5">
+            {activity.description}
+          </span>
         </p>
       ) : null}
     </div>

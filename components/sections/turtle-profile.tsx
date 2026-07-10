@@ -36,7 +36,7 @@ function ProfileFieldRow({ field }: { readonly field: TurtleProfileField }) {
 
 function ProfilePhotoCell({ photo }: { readonly photo: TurtleProfilePhoto }) {
   return (
-    <figure className="border-b border-brand-soft pb-3 pt-5 md:pt-8">
+    <figure className="pb-3 pt-5 md:pt-8">
       <figcaption className="font-bold text-ink">{photo.label}：</figcaption>
       <Image
         src={photo.src}
