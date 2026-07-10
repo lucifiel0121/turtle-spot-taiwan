@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* 本站為單一淺色設計（Figma 只有淺色稿）。Tailwind v4 預設 `dark:` variant
+   走 `@media (prefers-color-scheme: dark)`，OS 深色模式時會啟動 shadcn 元件
+   自帶的 dark: class（如 carousel 箭頭的 dark:bg-input/30、選單配色），把設計
+   稿的淺色打壞。改採 shadcn 慣例的 class-based dark variant：`dark:` 只在
+   `.dark` 祖先下生效——本站從不加 `.dark`，等於全面停用深色，鎖定淺色設計。 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Satoshi（設計稿指定字體）自 Fontshare 自托管；全域 @font-face 確保任何
    元素引用 "Satoshi" 都能觸發載入，不依賴 next/font 變數的繼承範圍。 */
 @font-face {
@@ -34,6 +41,9 @@
 }
 
 :root {
+  /* 單一淺色設計：明示 color-scheme 讓瀏覽器 UA 控制項（scrollbar、表單）
+     在 OS 深色模式下也維持淺色，不隨系統翻深。 */
+  color-scheme: light;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -110,13 +120,6 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
