@@ -140,16 +140,29 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
     >
       {/* 深色內容面板：底部大圓角，露出下緣青色帶（Figma menu 設計，Image #2）。 */}
       <div className="flex min-h-[80%] flex-col rounded-b-[32px] bg-ink pt-10 md:rounded-b-[40px] xl:rounded-b-[48px] xl:pt-16">
-        <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 md:py-14 xl:justify-end xl:gap-16 xl:py-16">
+        <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 xl:justify-end xl:gap-16 xl:py-16">
         <nav aria-label="主要導覽">
           <ul className="flex flex-col items-end gap-8 text-right md:gap-10 xl:flex-row xl:items-baseline xl:justify-between xl:gap-6 xl:text-left">
             {MENU_NAV_ITEMS.map((item, index) => (
               <li key={item.en}>
                 <a href={PLACEHOLDER_HREF} className="group block">
-                  <span className="block text-sm text-white/60">{item.zh}</span>
+                  {/* Mobile/Pad：中文標籤為主、不顯示英文（Figma mobile/pad menu 稿），
+                      避免雙行過高在矮螢幕（iPhone SE 667）爆版。 */}
                   <span
                     className={cn(
-                      "mt-1 block font-display text-4xl font-semibold transition-colors group-hover:text-brand md:text-5xl xl:text-4xl",
+                      "block font-display text-2xl font-medium transition-colors group-hover:text-brand md:text-3xl xl:hidden",
+                      index === 0 && "text-brand",
+                    )}
+                  >
+                    {item.zh}
+                  </span>
+                  {/* Desktop：中文小 eyebrow + 英文大字。 */}
+                  <span className="hidden text-sm text-white/60 xl:block">
+                    {item.zh}
+                  </span>
+                  <span
+                    className={cn(
+                      "mt-1 hidden font-display text-4xl font-semibold transition-colors group-hover:text-brand xl:block",
                       // Figma menu 稿首項（Map）為品牌青色高亮
                       index === 0 && "text-brand",
                     )}
