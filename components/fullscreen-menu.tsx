@@ -101,9 +101,9 @@ type MenuInfoBlockProps = {
 
 function MenuInfoBlock({ title, children }: MenuInfoBlockProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col items-end gap-2 text-right xl:items-start xl:text-left">
       <p className="text-sm text-white/60">{title}</p>
-      <div className="flex gap-6 font-display text-base font-medium">
+      <div className="flex justify-end gap-6 font-display text-base font-medium xl:justify-start">
         {children}
       </div>
     </div>
@@ -131,11 +131,13 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
       aria-modal="true"
       aria-label="全站導覽選單"
       tabIndex={-1}
-      className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-ink pt-10 text-white outline-none xl:pt-16"
+      className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-brand text-white outline-none"
     >
-      <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 md:py-14 xl:py-16">
+      {/* 深色內容面板：底部大圓角，露出下緣青色帶（Figma menu 設計，Image #2）。 */}
+      <div className="flex min-h-[80%] flex-col rounded-b-[32px] bg-ink pt-10 md:rounded-b-[40px] xl:rounded-b-[48px] xl:pt-16">
+        <SectionContainer className="flex flex-1 flex-col justify-between gap-12 py-10 md:py-14 xl:py-16">
         <nav aria-label="主要導覽">
-          <ul className="flex flex-col gap-8 md:gap-10 xl:flex-row xl:items-baseline xl:justify-between xl:gap-6">
+          <ul className="flex flex-col items-end gap-8 text-right md:gap-10 xl:flex-row xl:items-baseline xl:justify-between xl:gap-6 xl:text-left">
             {MENU_NAV_ITEMS.map((item) => (
               <li key={item.en}>
                 <a href={PLACEHOLDER_HREF} className="block">
@@ -148,7 +150,7 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
             ))}
           </ul>
         </nav>
-        <div className="flex flex-col gap-8 md:flex-row md:gap-24">
+        <div className="flex flex-col items-end gap-8 xl:flex-row xl:items-start xl:justify-start xl:gap-24">
           <MenuInfoBlock title={MENU_CONTACT_TITLE}>
             <a href={`mailto:${MENU_CONTACT_EMAIL}`}>{MENU_CONTACT_EMAIL}</a>
           </MenuInfoBlock>
@@ -160,7 +162,8 @@ export function FullscreenMenu({ open, onClose }: FullscreenMenuProps) {
             ))}
           </MenuInfoBlock>
         </div>
-      </SectionContainer>
+        </SectionContainer>
+      </div>
     </div>
   );
 }
