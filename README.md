@@ -68,7 +68,9 @@ tests/             # Vitest 單元測試，鏡射 components/lib/pages 結構
 7. **重構收斂**：功能穩定後統一收斂重複結構（跑馬燈 props、story 卡尺寸常數、共用 LogoMark）、移除死碼與模板殘留，並將所有函式收斂至 50 行以內。
 8. **部署與文件**：完成 production build 驗證後部署至 Vercel，並整理設計疑義清單與驗證報告作為交付文件。
 
-**總工時：約 16 小時（2 個工作天）**，粗略分配：設計稿判讀與環境建置約 3 小時／六大 section 與互動元件實作約 7 小時／RWD 校正與測試約 4 小時／部署與文件整理約 2 小時。
+9. **交付後 Figma 逐項對齊**：以 Desktop／Pad／Mobile 三尺寸 headed 瀏覽器對照設計稿逐項校正——還原自托管 display 字體、修正全螢幕選單開啟態（深色 navbar／關閉 icon／導覽與聯絡資訊排版）與各裝置版面切換，並修復一個使用者裝置深色模式下才會出現的配色缺陷（詳見下節）。
+
+**總工時：約 20 小時**，粗略分配：設計稿判讀與環境建置約 3 小時／六大 section 與互動元件實作約 7 小時／RWD 校正與測試約 4 小時／部署與文件整理約 2 小時／交付後 Figma 逐項對齊與跨裝置校正約 4 小時。
 
 ## 遇到的困難與解法
 
@@ -78,6 +80,7 @@ tests/             # Vitest 單元測試，鏡射 components/lib/pages 結構
 - **Pointer capture 導致卡片內點擊失效，僅瀏覽器可重現**：修正拖曳邊界行為時，在 `onPointerDown` 無條件呼叫 `setPointerCapture`，造成瀏覽器將後續 click 事件全數重新導向至卡片本身，story 卡內的 dots 與連結按鈕點擊完全失效。jsdom 未實作 Pointer Capture 與 click retargeting，單元測試因此全綠卻掩蓋了真實缺陷；改以 headed 瀏覽器實測配合 `elementFromPoint` 與 click 事件目標比對才定位根因。解法為將 capture 時機延後至位移超過門檻（確立拖曳意圖）才觸發，單純點擊不再被攔截。
 - **選單開關間接導致輪播自動播放永久停止**：headed 端對端流程驗收時發現，開啟全螢幕選單會鎖定 body 捲動、造成 scrollbar 消失使版面寬度變化，進而觸發 Embla 的 `ResizeObserver` 重新初始化（`reInit`）；輪播的 autoplay 因初始化參數不會在 `reInit` 後自行恢復，且原本的閒置恢復計時器只掛在輪播區域本身的互動事件上，選單操作不在其上，導致自動播放永久停止且不會再恢復。解法是讓 autoplay 控制器額外監聽 Embla 的 `reInit` 事件並接手恢復播放，同時保留「閒置滿 6 秒才恢復」與 `prefers-reduced-motion` 不自動播放的既有語意。
 - **設計稿內部資訊不一致**：全螢幕選單與 footer 兩處呈現的聯絡信箱文字不同（`info@gmail.com` 與 `tstservice@gmail.com`），逐字核對截圖確認並非誤讀而是設計稿本身的落差。依「設計 100% 忠實實作、不擅改」的原則，兩處均如實保留原文，僅記錄差異並附上統一建議供設計方確認，不自行決定何者為正。
+- **使用者作業系統深色模式打壞單一淺色設計（僅特定使用者可重現）**：設計稿為單一淺色版，但專案沿用了預設會綁作業系統深色偏好（`@media (prefers-color-scheme: dark)`）的 Tailwind `dark:` variant，導致部分 UI 元件內建的深色樣式在使用者「系統為深色模式」時同時啟動——輪播箭頭底色由純黑變半透明灰、頁面背景被翻黑。此缺陷只在瀏覽者作業系統開啟深色模式時出現，開發者自身淺色環境完全看不到。解法為將 `dark:` 改為需明確 `.dark` class 才生效（本站不使用，等於全面鎖定淺色設計）並移除背景翻色，改以編譯後 CSS 檢查 `prefers-color-scheme` 規則歸零、並用 Playwright 模擬深色模式量測 computed style 對照驗證。
 
 ## 測試
 
